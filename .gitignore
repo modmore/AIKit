@@ -1,0 +1,6 @@
+.idea
+config.core.php
+.DS_store
+core/components/aikit/vendor/
+/vendor
+.phpunit.result.cache

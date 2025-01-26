@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<model package="modmore\AIKit\Model\" baseClass="modmore\AIKit\Model\BaseObject" platform="mysql" defaultEngine="InnoDB" version="3.0">
+    <object class="BaseObject" extends="xPDO\Om\xPDOSimpleObject" />
+    
+    <object class="Conversation" table="aikit_conversation">
+        <field key="title" dbtype="varchar" precision="190" phptype="string" null="false" default="monthly" />
+        <field key="started_by" dbtype="int" precision="10" phptype="int" null="false" default="0" attributes="unsigned" />
+        <field key="started_on" dbtype="int" precision="20" phptype="int" null="false" default="0" attributes="unsigned" />
+        <field key="last_message_on" dbtype="int" precision="20" phptype="int" null="false" default="0" attributes="unsigned" />
+
+        <field key="prompt_token_count" dbtype="int" precision="20" phptype="int" null="false" default="0" attributes="unsigned" />
+        <field key="response_token_count" dbtype="int" precision="20" phptype="int" null="false" default="0" attributes="unsigned" />
+
+        <!--        <field key="verified" dbtype="tinyint" precision="1" phptype="boolean" null="false" default="0" />-->
+
+        <composite alias="Messages" cardinality="many" class="modmore\AIKit\Model\Message" foreign="conversation" local="id" owner="local" />
+        <aggregate alias="StartedBy" cardinality="one" class="modUser" foreign="id" local="started_by" owner="foreign" />
+
+        <index alias="started_by" name="started_by" primary="false" unique="false" type="BTREE">
+            <column key="started_by" length="" collation="A" null="false" />
+        </index>
+        <index alias="started_on" name="started_on" primary="false" unique="false" type="BTREE">
+            <column key="started_on" length="" collation="A" null="false" />
+        </index>
+        <index alias="last_message_on" name="last_message_on" primary="false" unique="false" type="BTREE">
+            <column key="last_message_on" length="" collation="A" null="false" />
+        </index>
+        <index alias="prompt_token_count" name="prompt_token_count" primary="false" unique="false" type="BTREE">
+            <column key="prompt_token_count" length="" collation="A" null="false" />
+        </index>
+        <index alias="response_token_count" name="response_token_count" primary="false" unique="false" type="BTREE">
+            <column key="response_token_count" length="" collation="A" null="false" />
+        </index>
+    </object>
+    <object class="Message" table="aikit_message">
+        <field key="conversation" dbtype="int" precision="10" phptype="int" null="false" default="0" attributes="unsigned" />
+        <field key="user_role" dbtype="varchar" precision="190" phptype="string" null="false" default="system" />
+        <field key="user" dbtype="int" precision="10" phptype="int" null="false" default="0" attributes="unsigned" />
+        <field key="content" dbtype="varchar" precision="190" phptype="string" null="false" default="" />
+        <field key="created_on" dbtype="int" precision="20" phptype="int" null="false" default="0" attributes="unsigned" />
+        <field key="delivered_on" dbtype="int" precision="20" phptype="int" null="false" default="0" attributes="unsigned" />
+
+        <field key="prompt_token_count" dbtype="int" precision="20" phptype="int" null="false" default="0" attributes="unsigned" />
+        <field key="response_token_count" dbtype="int" precision="20" phptype="int" null="false" default="0" attributes="unsigned" />
+
+        <aggregate alias="Conversation" cardinality="one" class="modmore\AIKit\Model\Conversation" foreign="id" local="conversation" owner="foreign" />
+        <aggregate alias="User" cardinality="one" class="modUser" foreign="id" local="user" owner="foreign" />
+
+        <index alias="conversation" name="conversation" primary="false" unique="false" type="BTREE">
+            <column key="conversation" length="" collation="A" null="false" />
+        </index>
+        <index alias="user" name="user" primary="false" unique="false" type="BTREE">
+            <column key="user" length="" collation="A" null="false" />
+        </index>
+        <index alias="delivered_on" name="delivered_on" primary="false" unique="false" type="BTREE">
+            <column key="delivered_on" length="" collation="A" null="false" />
+        </index>
+        <index alias="prompt_token_count" name="prompt_token_count" primary="false" unique="false" type="BTREE">
+            <column key="prompt_token_count" length="" collation="A" null="false" />
+        </index>
+        <index alias="response_token_count" name="response_token_count" primary="false" unique="false" type="BTREE">
+            <column key="response_token_count" length="" collation="A" null="false" />
+        </index>
+    </object>
+
+    <object class="ExtFunction" table="aikit_function">
+        <field key="function" dbtype="varchar" precision="200" phptype="string" null="false" default="" />
+        <field key="enabled" dbtype="tinyint" precision="1" phptype="boolean" null="false" default="0" />
+        <field key="function_config" dbtype="text" phptype="array" null="false" default="" />
+
+        <index alias="function" name="function" primary="false" unique="false" type="BTREE">
+            <column key="function" length="" collation="A" null="false" />
+        </index>
+        <index alias="enabled" name="enabled" primary="false" unique="false" type="BTREE">
+            <column key="enabled" length="" collation="A" null="false" />
+        </index>
+    </object>
+</model>
