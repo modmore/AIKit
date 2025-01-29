@@ -2,12 +2,14 @@
 
 namespace modmore\AIKit\API;
 
+use modmore\AIKit\LLM\Model;
 use modmore\AIKit\Model\Conversation;
 use modmore\AIKit\Model\Message;
 use MODX\Revolution\modX;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Throwable;
 use xPDO\Om\xPDOCriteria;
 
 class MessagesAPI implements ApiInterface
@@ -78,7 +80,7 @@ class MessagesAPI implements ApiInterface
         if (!$conversation) {
             return $this->createJsonResponse(['error' => 'Conversation not found'], 404);
         }
-        
+
         if (empty($body['content'])) {
             return $this->createJsonResponse(['error' => 'The content parameter is required'], 400);
         }
@@ -96,11 +98,15 @@ class MessagesAPI implements ApiInterface
             return $this->createJsonResponse(['error' => 'Failed to save message'], 500);
         }
 
-        // @todo actually send the message to the chosen AI provider
+        $model = new Model($this->modx);
+        try {
+            $model->send($conversation);
+        } catch (Throwable $e) {
+            $this->modx->log(modX::LOG_LEVEL_ERROR, 'Failed to send message to model: ' . $e->getMessage() . ' / ' . $e->getTraceAsString());
+            return $this->createJsonResponse(['error' => 'Failed to send message to model'], 500);
+        }
 
-        return $message->save()
-            ? $this->createJsonResponse($message->toArray(), 201)
-            : $this->createJsonResponse(['error' => 'Failed to create message'], 500);
+        return $this->createJsonResponse(['data' => ['message' => $message->get('id')]], 201);
     }
 
     private function getPaginationParams(array $queryParams): array
