@@ -148,7 +148,7 @@ $manager = $modx->getManager();
 /* Create the tables */
 $objectContainers = [
     \modmore\AIKit\Model\Conversation::class,
-    \modmore\AIKit\Model\ExtFunction::class,
+    \modmore\AIKit\Model\Tool::class,
     \modmore\AIKit\Model\Message::class
 ];
 echo "Creating tables...\n";
@@ -158,6 +158,19 @@ foreach ($objectContainers as $oC) {
 }
 
 $modx->getCacheManager()->refresh();
+
+$exTools = [
+    \modmore\AIKit\LLM\Tools\GetCurrentWeather::class
+];
+foreach ($exTools as $tool) {
+    $rec = $modx->newObject(\modmore\AIKit\Model\Tool::class);
+    $rec->fromArray([
+        'enabled' => true,
+        'class' => $tool,
+        'tool_config' => [],
+    ]);
+    $rec->save();
+}
 
 
 /**

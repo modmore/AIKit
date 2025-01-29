@@ -18,4 +18,8 @@ use xPDO\xPDO;
  */
 class Message extends \modmore\AIKit\Model\BaseObject
 {
+    public const ROLE_DEVELOPER = 'developer';
+    public const ROLE_USER = 'user';
+    public const ROLE_ASSISTANT = 'assistant';
+    public const ROLE_TOOL = 'tool';
 }

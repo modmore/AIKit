@@ -5,6 +5,10 @@ use xPDO\xPDO;
 
 class Message extends \modmore\AIKit\Model\Message
 {
+    const ROLE_DEVELOPER = 'developer';
+    const ROLE_USER = 'user';
+    const ROLE_ASSISTANT = 'assistant';
+    const ROLE_TOOL = 'tool';
 
     public static $metaMap = array (
         'package' => 'modmore\\AIKit\\Model\\',
@@ -17,9 +21,12 @@ class Message extends \modmore\AIKit\Model\Message
         'fields' => 
         array (
             'conversation' => 0,
+            'llm_id' => 'system',
+            'tool_call_id' => 'system',
             'user_role' => 'system',
             'user' => 0,
             'content' => '',
+            'created_on' => 0,
             'delivered_on' => 0,
             'prompt_token_count' => 0,
             'response_token_count' => 0,
@@ -34,6 +41,22 @@ class Message extends \modmore\AIKit\Model\Message
                 'null' => false,
                 'default' => 0,
                 'attributes' => 'unsigned',
+            ),
+            'llm_id' => 
+            array (
+                'dbtype' => 'varchar',
+                'precision' => '190',
+                'phptype' => 'string',
+                'null' => false,
+                'default' => 'system',
+            ),
+            'tool_call_id' => 
+            array (
+                'dbtype' => 'varchar',
+                'precision' => '190',
+                'phptype' => 'string',
+                'null' => false,
+                'default' => 'system',
             ),
             'user_role' => 
             array (
@@ -54,11 +77,19 @@ class Message extends \modmore\AIKit\Model\Message
             ),
             'content' => 
             array (
-                'dbtype' => 'varchar',
-                'precision' => '190',
+                'dbtype' => 'text',
                 'phptype' => 'string',
                 'null' => false,
                 'default' => '',
+            ),
+            'created_on' => 
+            array (
+                'dbtype' => 'int',
+                'precision' => '20',
+                'phptype' => 'int',
+                'null' => false,
+                'default' => 0,
+                'attributes' => 'unsigned',
             ),
             'delivered_on' => 
             array (

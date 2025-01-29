@@ -16,7 +16,7 @@ class Conversation extends \modmore\AIKit\Model\Conversation
         ),
         'fields' => 
         array (
-            'title' => 'monthly',
+            'title' => 'New message',
             'started_by' => 0,
             'started_on' => 0,
             'last_message_on' => 0,
@@ -31,7 +31,7 @@ class Conversation extends \modmore\AIKit\Model\Conversation
                 'precision' => '190',
                 'phptype' => 'string',
                 'null' => false,
-                'default' => 'monthly',
+                'default' => 'New message',
             ),
             'started_by' => 
             array (

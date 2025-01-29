@@ -3,33 +3,25 @@ namespace modmore\AIKit\Model\mysql;
 
 use xPDO\xPDO;
 
-class ExtFunction extends \modmore\AIKit\Model\ExtFunction
+class Tool extends \modmore\AIKit\Model\Tool
 {
 
     public static $metaMap = array (
         'package' => 'modmore\\AIKit\\Model\\',
         'version' => '3.0',
-        'table' => 'aikit_function',
+        'table' => 'aikit_tool',
         'tableMeta' => 
         array (
             'engine' => 'InnoDB',
         ),
         'fields' => 
         array (
-            'function' => '',
             'enabled' => 0,
-            'function_config' => '',
+            'class' => '',
+            'tool_config' => '',
         ),
         'fieldMeta' => 
         array (
-            'function' => 
-            array (
-                'dbtype' => 'varchar',
-                'precision' => '200',
-                'phptype' => 'string',
-                'null' => false,
-                'default' => '',
-            ),
             'enabled' => 
             array (
                 'dbtype' => 'tinyint',
@@ -38,7 +30,15 @@ class ExtFunction extends \modmore\AIKit\Model\ExtFunction
                 'null' => false,
                 'default' => 0,
             ),
-            'function_config' => 
+            'class' => 
+            array (
+                'dbtype' => 'varchar',
+                'precision' => '200',
+                'phptype' => 'string',
+                'null' => false,
+                'default' => '',
+            ),
+            'tool_config' => 
             array (
                 'dbtype' => 'text',
                 'phptype' => 'array',
@@ -48,22 +48,6 @@ class ExtFunction extends \modmore\AIKit\Model\ExtFunction
         ),
         'indexes' => 
         array (
-            'function' => 
-            array (
-                'alias' => 'function',
-                'primary' => false,
-                'unique' => false,
-                'type' => 'BTREE',
-                'columns' => 
-                array (
-                    'function' => 
-                    array (
-                        'length' => '',
-                        'collation' => 'A',
-                        'null' => false,
-                    ),
-                ),
-            ),
             'enabled' => 
             array (
                 'alias' => 'enabled',
@@ -73,6 +57,22 @@ class ExtFunction extends \modmore\AIKit\Model\ExtFunction
                 'columns' => 
                 array (
                     'enabled' => 
+                    array (
+                        'length' => '',
+                        'collation' => 'A',
+                        'null' => false,
+                    ),
+                ),
+            ),
+            'class' => 
+            array (
+                'alias' => 'class',
+                'primary' => false,
+                'unique' => false,
+                'type' => 'BTREE',
+                'columns' => 
+                array (
+                    'class' => 
                     array (
                         'length' => '',
                         'collation' => 'A',

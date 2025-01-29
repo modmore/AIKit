@@ -13,7 +13,7 @@ $xpdo_meta_map = array (
         array (
             0 => 'modmore\\AIKit\\Model\\Conversation',
             1 => 'modmore\\AIKit\\Model\\Message',
-            2 => 'modmore\\AIKit\\Model\\ExtFunction',
+            2 => 'modmore\\AIKit\\Model\\Tool',
         ),
     ),
 );
