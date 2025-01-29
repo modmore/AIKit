@@ -31,6 +31,8 @@ $request = $request->withQueryParams($_GET)
     ->withCookieParams($_COOKIE)
     ->withUploadedFiles($_FILES);
 
+// Support calls like conversation/await => Conversation\AwaitAPI
+$a = implode('\\', array_filter(array_map('ucfirst', explode('/', $a))));
 $className = '\modmore\AIKit\API\\' . ucfirst($a) . 'API';
 if (class_exists($className) && is_subclass_of($className, ApiInterface::class, true)) {
     $api = new $className($modx);
