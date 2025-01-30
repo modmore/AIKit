@@ -34,12 +34,13 @@
     </object>
     <object class="Message" table="aikit_message">
         <field key="conversation" dbtype="int" precision="10" phptype="int" null="false" default="0" attributes="unsigned" />
-        <field key="llm_id" dbtype="varchar" precision="190" phptype="string" null="false" default="system" />
-        <field key="tool_call_id" dbtype="varchar" precision="190" phptype="string" null="false" default="system" />
+        <field key="llm_id" dbtype="varchar" precision="190" phptype="string" null="false" default="" />
+        <field key="tool_call_id" dbtype="varchar" precision="190" phptype="string" null="false" default="" />
 
         <field key="user_role" dbtype="varchar" precision="190" phptype="string" null="false" default="system" />
         <field key="user" dbtype="int" precision="10" phptype="int" null="false" default="0" attributes="unsigned" />
         <field key="content" dbtype="text" phptype="string" null="false" default="" />
+        <field key="tool_calls" dbtype="text" phptype="array" null="true" default="" />
         <field key="created_on" dbtype="int" precision="20" phptype="int" null="false" default="0" attributes="unsigned" />
         <field key="delivered_on" dbtype="int" precision="20" phptype="int" null="false" default="0" attributes="unsigned" />
 

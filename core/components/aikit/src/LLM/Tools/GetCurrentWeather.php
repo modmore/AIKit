@@ -34,7 +34,7 @@ class GetCurrentWeather implements ToolInterface
      */
     public function getToolDescription(): string
     {
-        return 'Get the current weather in the provided location. Location must be provided as latitude and longitude. The weather variables that are available are: temperature, apparent temperature, humidity, wind speed, wind direction, cloud cover, precipitation, rain, snowfall.';
+        return 'Get the current weather in the provided location. Location must be provided as latitude and longitude, but don\'t ask users for that. Instead ask users for the location and then transform that to latitude/longitude. The weather variables that are available are: temperature, apparent temperature, humidity, wind speed, wind direction, cloud cover, precipitation, rain, snowfall.';
     }
 
     /**

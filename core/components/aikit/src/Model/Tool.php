@@ -16,7 +16,7 @@ use xPDO\xPDO;
  */
 class Tool extends \modmore\AIKit\Model\BaseObject
 {
-    public function getToolInstance()
+    public function getToolInstance(): ToolInterface
     {
         $className = $this->get('class');
         if (!class_exists($className)) {

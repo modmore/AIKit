@@ -3,6 +3,7 @@
 namespace modmore\AIKit\LLM;
 
 use modmore\AIKit\LLM\Models\OpenAI;
+use modmore\AIKit\LLM\Tools\ToolInterface;
 use modmore\AIKit\Model\Conversation;
 use modmore\AIKit\Model\Message;
 use modmore\AIKit\Model\Tool;
@@ -13,7 +14,7 @@ class Model
     private modX $modx;
     private array $config;
 
-    /** @var Tool[] */
+    /** @var ToolInterface[] */
     private array $tools = [];
     private OpenAI $model;
 
@@ -43,8 +44,13 @@ class Model
             'created_on' => time(),
             'prompt_token_count' => $response->getPromptTokens(),
             'response_token_count' => $response->getResponseTokens(),
+            'tool_calls' => $response->getToolCalls(),
         ]);
         $message->save();
+
+        $conversation->set('prompt_token_count', $conversation->get('prompt_token_count') + $response->getPromptTokens());
+        $conversation->set('response_token_count', $conversation->get('response_token_count') + $response->getResponseTokens());
+        $conversation->save();
         $conversation->addMany($message);
 
         switch ($response->getFinishReason()) {
@@ -52,10 +58,14 @@ class Model
             case ModelResponse::FINISH_REASON_TOOL_CALLS:
                 foreach ($response->getToolCalls() as $toolCall) {
                     $tool = $this->tools[$toolCall['function']['name']];
-                    $args = json_decode($toolCall['arguments'], true, 512, JSON_THROW_ON_ERROR);
-                    $function = $tool->get('function');
+                    $args = json_decode($toolCall['function']['arguments'], true, 512, JSON_THROW_ON_ERROR);
 
-                    $functionResponse = function_exists($function) ? $function($args) : 'Error running function.';
+                    try {
+                        $functionResponse = $tool->runTool($args);
+                    } catch (\Throwable $e) {
+                        $this->modx->log(modX::LOG_LEVEL_ERROR, 'Failed to run tool ' . $tool->getToolName() . ': ' . $e->getMessage() . ' / ' . $e->getTraceAsString());
+                        $functionResponse = 'Failed to run tool: ' . $e->getMessage();
+                    }
 
                     /** @var Message $toolMessage */
                     $toolMessage = $this->modx->newObject(Message::class);

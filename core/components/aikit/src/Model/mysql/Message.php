@@ -21,11 +21,12 @@ class Message extends \modmore\AIKit\Model\Message
         'fields' => 
         array (
             'conversation' => 0,
-            'llm_id' => 'system',
-            'tool_call_id' => 'system',
+            'llm_id' => '',
+            'tool_call_id' => '',
             'user_role' => 'system',
             'user' => 0,
             'content' => '',
+            'tool_calls' => '',
             'created_on' => 0,
             'delivered_on' => 0,
             'prompt_token_count' => 0,
@@ -48,7 +49,7 @@ class Message extends \modmore\AIKit\Model\Message
                 'precision' => '190',
                 'phptype' => 'string',
                 'null' => false,
-                'default' => 'system',
+                'default' => '',
             ),
             'tool_call_id' => 
             array (
@@ -56,7 +57,7 @@ class Message extends \modmore\AIKit\Model\Message
                 'precision' => '190',
                 'phptype' => 'string',
                 'null' => false,
-                'default' => 'system',
+                'default' => '',
             ),
             'user_role' => 
             array (
@@ -80,6 +81,13 @@ class Message extends \modmore\AIKit\Model\Message
                 'dbtype' => 'text',
                 'phptype' => 'string',
                 'null' => false,
+                'default' => '',
+            ),
+            'tool_calls' => 
+            array (
+                'dbtype' => 'text',
+                'phptype' => 'array',
+                'null' => true,
                 'default' => '',
             ),
             'created_on' => 

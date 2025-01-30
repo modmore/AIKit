@@ -29,13 +29,16 @@ class OpenAI implements ModelInterface
         $this->client = $this->modx->services->get(\Psr\Http\Client\ClientInterface::class);
         $this->requestFactory = $this->modx->services->get(\Psr\Http\Message\RequestFactoryInterface::class);
         $this->tools = $tools;
+
+        // @fixme move to some model configuration of sorts
+        $this->config['api_key'] = $this->modx->getOption('aikit.openai_api_key');
     }
 
     public function send(Conversation $conversation): ModelResponse
     {
         $requestData = [
             'model' => $this->config['model'] ?? 'gpt-4', // Default to 'gpt-4' or use a configured model
-            'messages' => array_map([$this, 'prepareMessage'], $conversation->getMany('Messages')),
+            'messages' => array_values(array_map([$this, 'prepareMessage'], $conversation->getMany('Messages'))),
             'tools' => $this->getToolsDefinitions()
         ];
 
@@ -55,8 +58,9 @@ class OpenAI implements ModelInterface
             return new ModelResponse($responseData); // Assuming ModelResponse can accept the raw data
         }
 
+        $this->modx->log(modX::LOG_LEVEL_ERROR, 'Failed to communicate with OpenAI: ' . (string)$response->getBody() . '  ' . $response->getReasonPhrase() . ' (' . $requestBody . ')',);
         throw new \RuntimeException(
-            'Failed to communicate with OpenAI: ' . $response->getReasonPhrase(),
+            'Failed to communicate with OpenAI: ' . (string)$response->getBody() . '  ' . $response->getReasonPhrase() . ' (' . $requestBody . ')',
             $response->getStatusCode()
         );
     }
@@ -66,10 +70,9 @@ class OpenAI implements ModelInterface
      */
     private function prepareMessage(Message $message): array
     {
-        $profile = null;
+        $user = null;
         if ($message->get('user') > 0) {
             $user = $message->getOne('User');
-            $profile = $user?->getOne('Profile');
         }
 
         switch ($message->get('user_role')) {
@@ -80,15 +83,16 @@ class OpenAI implements ModelInterface
                     'tool_call_id' => $message->get('tool_call_id'),
                 ];
 
-            case Message::ROLE_DEVELOPER:
             case Message::ROLE_ASSISTANT:
+            case Message::ROLE_DEVELOPER:
             case Message::ROLE_USER:
             default:
-                return [
+                return array_filter([
                     'role' => $message->get('user_role'), // Example: 'developer', 'user', 'assistant'
                     'content' => $message->get('content'),
-                    'name' => $profile ? $profile->get('fullname') : '',
-                ];
+                    'tool_calls' => $message->get('tool_calls'),
+                    'name' => $user ? $user->get('username') : '',
+                ]);
         }
     }
 
@@ -99,7 +103,7 @@ class OpenAI implements ModelInterface
             $props = [];
             $required = [];
             foreach ($tool->getModelParameters() as $key => $param) {
-                if ($param['required']) {
+                if (!empty($param['required'])) {
                     $required[] = $key;
                     unset($param['required']);
                 }
@@ -115,9 +119,8 @@ class OpenAI implements ModelInterface
                         'type' => 'object',
                         'properties' => $props,
                     ],
-                    'required' => $required
+                    'required' => $required,
                 ],
-                'strict' => true,
             ];
         }
 

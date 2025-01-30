@@ -2,6 +2,7 @@
 
 namespace modmore\AIKit\API;
 
+use JsonException;
 use modmore\AIKit\LLM\Model;
 use modmore\AIKit\Model\Conversation;
 use modmore\AIKit\Model\Message;
@@ -64,17 +65,21 @@ class MessagesAPI implements ApiInterface
 
     private function handlePostRequest(ServerRequestInterface $request): ResponseInterface
     {
-        $body = json_decode((string)$request->getBody(), true);
+        try {
+            $body = json_decode($request->getBody()->getContents(), true, 512, JSON_THROW_ON_ERROR);
+        } catch (JsonException $e) {
+            return $this->createJsonResponse(['error' => 'Invalid JSON'], 400);
+        }
 
-
+        $conversationId = (int)$request->getQueryParams()['conversation'];
         // Require a conversation parameter and load the conversation object with that id.
-        if (empty($body['conversation'])) {
+        if (empty($conversationId)) {
             return $this->createJsonResponse(['error' => 'The conversation parameter is required'], 400);
         }
 
         /** @var Conversation $conversation */
         $conversation = $this->modx->getObject(Conversation::class, [
-            'id' => $body['conversation'],
+            'id' => $conversationId,
             'started_by' => $this->modx->user->get('id'),
         ]);
         if (!$conversation) {
@@ -91,6 +96,7 @@ class MessagesAPI implements ApiInterface
             'conversation' => $conversation->get('id'),
             'user_role' => 'user',
             'user' => $this->modx->user->get('id'),
+            'created_on' => time(),
             'content' => $body['content'],
         ]);
 
@@ -120,8 +126,7 @@ class MessagesAPI implements ApiInterface
     private function createMessageQuery(int $limit, int $offset): xPDOCriteria
     {
         $query = $this->modx->newQuery(Message::class);
-        $query->sortby('last_message_on', 'DESC');
-        $query->where(['started_by' => $this->modx->user->get('id')]);
+        $query->sortby('created_on', 'DESC');
         $query->limit($limit, $offset);
 
         return $query;

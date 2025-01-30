@@ -160,16 +160,20 @@ foreach ($objectContainers as $oC) {
 $modx->getCacheManager()->refresh();
 
 $exTools = [
-    \modmore\AIKit\LLM\Tools\GetCurrentWeather::class
+    \modmore\AIKit\LLM\Tools\GetCurrentWeather::class,
+    \modmore\AIKit\LLM\Tools\GetResourceDetails::class,
+    \modmore\AIKit\LLM\Tools\FindResources::class,
 ];
 foreach ($exTools as $tool) {
-    $rec = $modx->newObject(\modmore\AIKit\Model\Tool::class);
-    $rec->fromArray([
-        'enabled' => true,
-        'class' => $tool,
-        'tool_config' => [],
-    ]);
-    $rec->save();
+    if (!$modx->getCount(\modmore\AIKit\Model\Tool::class, ['class' => $tool])) {
+        $rec = $modx->newObject(\modmore\AIKit\Model\Tool::class);
+        $rec->fromArray([
+            'enabled' => true,
+            'class' => $tool,
+            'tool_config' => [],
+        ]);
+        $rec->save();
+    }
 }
 
 

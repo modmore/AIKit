@@ -37,7 +37,7 @@ class ConversationsAPI implements ApiInterface
 
         $total = 0; // refactor create query to be able to get a total
         $query = $this->createConversationQuery($limit, $offset);
-        $conversations = $this->modx->getCollection('Conversation', $query) ?? [];
+        $conversations = $this->modx->getCollection(Conversation::class, $query) ?? [];
 
         $resultData = [
             'data' => array_map(static fn($conversation) => $conversation->toArray(), $conversations),

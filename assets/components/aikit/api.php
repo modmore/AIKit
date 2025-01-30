@@ -14,22 +14,28 @@ $modx->initialize('mgr');
 $a = $_GET['a'] ?? $_SERVER['REQUEST_URI'];
 
 /** @var ServerRequestFactoryInterface $factory */
-$factory = $modx->services->get(ServerRequestFactoryInterface::class);
-$request = $factory->createServerRequest(
-    $_SERVER['REQUEST_METHOD'],
-    $a, // We fake the request uri from $_GET['a'] if set
-    $_SERVER
-);
+//$factory = $modx->services->get(ServerRequestFactoryInterface::class);
+//$request = $factory->createServerRequest(
+//    $_SERVER['REQUEST_METHOD'],
+//    $a, // We fake the request uri from $_GET['a'] if set
+//    $_SERVER
+//);
+//
+//// Populate the request with any parsed body and query parameters
+//if ($_SERVER['REQUEST_METHOD'] === 'POST' || $_SERVER['REQUEST_METHOD'] === 'PUT') {
+//    $body = new CachingStream(new LazyOpenStream('php://input', 'r+'));
+//    $parsedBody = json_decode(file_get_contents('php://input'), true) ?: [];
+//    $request = $request->withParsedBody($parsedBody);
+//}
+//
+//
+//$request = $request->withQueryParams($_GET)
+//    ->withCookieParams($_COOKIE)
+//    ->withUploadedFiles($_FILES)
+//    ->withParsedBody($_POST);
 
-// Populate the request with any parsed body and query parameters
-if ($_SERVER['REQUEST_METHOD'] === 'POST' || $_SERVER['REQUEST_METHOD'] === 'PUT') {
-    $parsedBody = json_decode(file_get_contents('php://input'), true) ?: [];
-    $request = $request->withParsedBody($parsedBody);
-}
-
-$request = $request->withQueryParams($_GET)
-    ->withCookieParams($_COOKIE)
-    ->withUploadedFiles($_FILES);
+$request = \GuzzleHttp\Psr7\ServerRequest::fromGlobals();
+$request = $request->withUri($request->getUri()->withPath($a));
 
 // Support calls like conversation/await => Conversation\AwaitAPI
 $a = implode('\\', array_filter(array_map('ucfirst', explode('/', $a))));
