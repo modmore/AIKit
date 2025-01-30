@@ -37,7 +37,7 @@ class OpenAI implements ModelInterface
     public function send(Conversation $conversation): ModelResponse
     {
         $requestData = [
-            'model' => $this->config['model'] ?? 'gpt-4', // Default to 'gpt-4' or use a configured model
+            'model' => $this->config['model'] ?? 'gpt-4o-mini', // Default to 'gpt-4o-mini' or use a different configured model
             'messages' => array_values(array_map([$this, 'prepareMessage'], $conversation->getMany('Messages'))),
             'tools' => $this->getToolsDefinitions()
         ];
