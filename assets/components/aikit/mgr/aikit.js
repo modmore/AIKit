@@ -336,7 +336,7 @@ class MessageRenderer {
 
     createMessageElement(msg)
     {
-        let { id, user_role, user, content, status } = msg;
+        let { id, user_role, content, status } = msg;
 
         const messageEl = document.createElement('div');
         messageEl.className = `message ${user_role}`;
@@ -357,7 +357,7 @@ class MessageRenderer {
         } else if (user_role === 'user') {
             messageEl.innerHTML = `
                 <div class="user-message">
-                    <div class="username-bubble">${user}</div>
+                    <div class="username-bubble">${msg.user_username}</div>
                     <div class="user-prompt">${content}</div>
                 </div>
             `;

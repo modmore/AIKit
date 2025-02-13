@@ -6,6 +6,7 @@ use JsonException;
 use modmore\AIKit\LLM\Model;
 use modmore\AIKit\Model\Conversation;
 use modmore\AIKit\Model\Message;
+use MODX\Revolution\modUser;
 use MODX\Revolution\modX;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -112,6 +113,10 @@ class MessagesAPI implements ApiInterface
             return $this->createJsonResponse(['error' => 'Failed to send message to model'], 500);
         }
 
+//        if ($conversation->get('title') === 'New conversation') {
+//            $this->generateTitle($conversation);
+//        }
+
         return $this->createJsonResponse(['data' => ['message' => $message->get('id')]], 201);
     }
 
@@ -126,6 +131,9 @@ class MessagesAPI implements ApiInterface
     private function createMessageQuery(int $limit, int $offset): xPDOCriteria
     {
         $query = $this->modx->newQuery(Message::class);
+        $query->leftJoin(modUser::class, 'User');
+        $query->select($this->modx->getSelectColumns(Message::class, 'Message'));
+        $query->select($this->modx->getSelectColumns(modUser::class, 'User', 'user_', ['id', 'username']));
         $query->sortby('created_on', 'DESC');
         $query->limit($limit, $offset);
 
@@ -142,4 +150,35 @@ class MessagesAPI implements ApiInterface
 
         return $response;
     }
+
+//    private function generateTitle(Conversation $conversation): void
+//    {
+//        /** @var Message $message */
+//        $message = $this->modx->newObject(Message::class);
+//        $message->fromArray([
+//            'conversation' => $conversation->get('id'),
+//            'user_role' => 'user',
+//            'user' => $this->modx->user->get('id'),
+//            'created_on' => time(),
+//            'content' => "Generate a short, concise, and specific title for this conversation. Use at most 120 characters, but the shorter the better.",
+//        ]);
+//        $message->save();
+//
+//        $model = new Model($this->modx);
+//        try {
+//            $response = $model->send($conversation);
+//            if ($response instanceof ModelResponse) {
+//                $conversation->set('title', $response->getResponseText());
+//                $conversation->save();
+//            } elseif ($response instanceof Message) {
+//                $conversation->set('title', $response->get('content'));
+//                $conversation->save();
+//                $response->remove();
+//            }
+//            $message->remove();
+//        } catch (Throwable $e) {
+//            $this->modx->log(modX::LOG_LEVEL_ERROR, 'Failed to send message to model: ' . $e->getMessage() . ' / ' . $e->getTraceAsString());
+//            $message->remove();
+//        }
+//    }
 }
