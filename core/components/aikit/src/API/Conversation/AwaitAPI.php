@@ -58,7 +58,7 @@ class AwaitAPI implements ApiInterface
 
                 // Prepare the new messages as an array of their data
                 $newMessages = array_map(static fn($message) => $message->toArray(), $messages);
-                return $this->createJsonResponse(['messages' => $newMessages], 200);
+                return $this->createJsonResponse(['data' => $newMessages], 200);
             }
 
             // Wait for the poll interval before checking again
@@ -66,7 +66,7 @@ class AwaitAPI implements ApiInterface
         } while ((time() - $startTime) < $timeout);
 
 
-        return $this->createJsonResponse(['message' => 'No new messages.'], 204);
+        return $this->createJsonResponse(['data' => []], 204);
     }
 
     public function createJsonResponse(array $data, int $statusCode): ResponseInterface

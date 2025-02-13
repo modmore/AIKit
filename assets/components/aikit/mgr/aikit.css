@@ -259,16 +259,38 @@
     text-align: left;
 }
 
-.assistant-message {
-    /*background-color: #e9ecef; !* Light gray speech bubble *!*/
-    /*color: #212529; !* Dark text *!*/
-    /*font-size: 1rem;*/
-    /*padding: 0.75rem 1rem;*/
-    /*border-radius: 20px;*/
-    /*border-bottom-left-radius: 5px; !* Slightly sharper corner *!*/
-    /*box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);*/
+#modx-navbar .assistant-message, #modx-navbar .assistant-message * {
+    text-align: left;
+    line-height: 1.4;
+}
+#modx-navbar .assistant-message a {
+    color: #234368;
+    width: auto;
+    display: inline;
+    text-decoration: underline;
+    font-size: 1em;
+}
+#modx-navbar .assistant-message p,
+#modx-navbar .assistant-message ul,
+#modx-navbar .assistant-message ol,
+#modx-navbar .assistant-message h1,
+#modx-navbar .assistant-message h2,
+#modx-navbar .assistant-message h3,
+#modx-navbar .assistant-message h4,
+#modx-navbar .assistant-message h5
+{
+    line-height: 1.4;
+    margin-bottom: 0.5em;
 }
 
+#modx-navbar .assistant-message ul {
+    padding-left: 1em;
+    list-style-type: disc;
+}
+#modx-navbar .assistant-message ol {
+    padding-left: 1em;
+    list-style-type: decimal;
+}
 /* Tool messages */
 .message.tool {
     align-self: flex-start;
@@ -294,7 +316,6 @@
 }
 
 .tool-title {
-    font-weight: bold;
 }
 
 /*.tool-status {*/

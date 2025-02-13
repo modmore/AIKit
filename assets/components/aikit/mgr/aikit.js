@@ -84,7 +84,7 @@ class AIKit {
 
         const sendButton = document.createElement('button');
         sendButton.textContent = 'Send';
-        sendButton.addEventListener('click', () => this.sendMessage(textarea, messageContainer));
+        sendButton.addEventListener('click', () => this.sendMessage(textarea, this.messageContainer));
 
         footer.appendChild(textarea);
         footer.appendChild(sendButton);
@@ -154,13 +154,19 @@ class AIKit {
     openChat(conversationId)
     {
         this.currentConversation = conversationId;
+        this.messageRenderer.reset();
+        this.loadChatMessages(conversationId);
+    }
+
+    loadChatMessages(conversationId)
+    {
         fetch(this.config.assetsUrl + 'api.php?a=messages&conversation=' + conversationId)
             .then(response => response.json())
             .then(data => this.renderChatMessages(data.data))
             .catch(error => console.error('Error fetching messages:', error));
     }
 
-    // Render chat messages
+// Render chat messages
     renderChatMessages(messages = [])
     {
         this.messageRenderer.renderMessages(Object.values(messages));
@@ -193,15 +199,19 @@ class AIKit {
             return;
         }
 
+        this.isLoading = true;
         const messageContent = textarea.value.trim();
         if (!messageContent) {
             return;
         }
 
         const loadingIndicator = document.createElement('div');
-        loadingIndicator.textContent = 'Sending...';
+        loadingIndicator.textContent = 'Processing...';
         messageContainer.appendChild(loadingIndicator);
 
+        this.awaitAsyncMessages(this.currentConversation);
+
+        textarea.value = '';
         fetch(this.config.assetsUrl + 'api.php?a=messages&conversation=' + this.currentConversation, {
             method: 'POST',
             headers: {
@@ -212,17 +222,39 @@ class AIKit {
             .then(async response => {
                 const jsonResponse = await response.json();
                 if (response.status === 201) {
-                    textarea.value = '';
                     loadingIndicator.remove();
-                    this.openChat(this.currentConversation); // Refresh chat messages
+                    // make sure to load all messages
+                    this.loadChatMessages(this.currentConversation);
                 } else if (response.status === 500) {
                     loadingIndicator.textContent = jsonResponse.error || 'An error occurred.';
                 }
+                this.isLoading = false;
             })
             .catch(error => {
                 loadingIndicator.textContent = 'Error sending message.';
                 console.error('Error sending message:', error);
+                this.isLoading = false;
             });
+    }
+
+    awaitAsyncMessages(conversationId)
+    {
+        const lastMessageId = this.messageRenderer.renderedMessages.size > 0 ?
+            [...this.messageRenderer.renderedMessages.keys()].pop() : 0;
+
+        fetch(`${this.config.assetsUrl}api.php?a=conversation/await&conversation=${this.currentConversation}&last_message=${lastMessageId}`)
+            .then(response => response.json())
+            .then(data => {
+                const msgs = Object.values(data.data);
+                const firstMessage = msgs.length > 0 ? msgs[0] : null;
+                if (firstMessage && firstMessage.conversation === this.currentConversation) {
+                    this.renderChatMessages(msgs);
+                }
+                if (this.isLoading && conversationId === this.currentConversation) {
+                    this.awaitAsyncMessages(conversationId);
+                }
+            })
+            .catch(error => console.error('Error fetching new messages:', error));
     }
 }
 
@@ -231,6 +263,12 @@ class MessageRenderer {
     {
         this.messageContainer = messageContainer;
         this.renderedMessages = new Map(); // To track rendered messages by their IDs
+    }
+
+    reset()
+    {
+        this.renderedMessages.clear();
+        this.messageContainer.innerHTML = '';
     }
 
     renderMessages(messages)
@@ -253,16 +291,6 @@ class MessageRenderer {
                 const messageEl = this.createMessageElement(message);
                 this.messageContainer.appendChild(messageEl);
                 this.renderedMessages.set(id, messageEl);
-            }
-        });
-
-        // Clean up messages that are no longer in the input
-        const messageIds = messages.map(m => m.id);
-        [...this.renderedMessages.keys()].forEach(renderedId => {
-            if (!messageIds.includes(renderedId)) {
-                const messageEl = this.renderedMessages.get(renderedId);
-                this.messageContainer.removeChild(messageEl);
-                this.renderedMessages.delete(renderedId);
             }
         });
     }
@@ -332,6 +360,13 @@ class MessageRenderer {
                 });
             }
             else {
+                const md = markdownit({
+                    linkify: true,
+                    typographer: true,
+                    breaks: true,
+                });
+                content = md.render(content);
+
                 messageEl.innerHTML = `
                     <div class="assistant-message">
                         ${content}
@@ -364,7 +399,10 @@ class MessageRenderer {
 
     parseToolContent(content)
     {
-        content = JSON.stringify(JSON.parse(content),null,2);
+        try {
+            let json = JSON.parse(content);
+            content = JSON.stringify(json, null, 2);
+        } catch (e) { }
         return content.replace(/&/g, '&amp;')
             .replace(/</g, '&lt;')
             .replace(/>/g, '&gt;');

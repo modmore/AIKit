@@ -16,7 +16,7 @@ use xPDO\Om\xPDOCriteria;
 class MessagesAPI implements ApiInterface
 {
     private const DEFAULT_PAGE = 1;
-    private const DEFAULT_LIMIT = 10;
+    private const DEFAULT_LIMIT = 30;
 
     private modX $modx;
 

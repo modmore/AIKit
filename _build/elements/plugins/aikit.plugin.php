@@ -7,6 +7,7 @@ switch ($modx->event->name) {
     case 'OnManagerPageBeforeRender':
         $assetsUrl = $modx->getOption('aikit.assets_url', null, $modx->getOption('assets_url') . 'components/aikit/');
         $controller->addJavascript($assetsUrl . 'mgr/aikit.js');
+        $controller->addJavascript('https://cdn.jsdelivr.net/npm/markdown-it/dist/markdown-it.min.js'); // @todo ship local
         $controller->addCss($assetsUrl . 'mgr/aikit.css');
         $controller->addHtml(<<<HTML
 <script>
