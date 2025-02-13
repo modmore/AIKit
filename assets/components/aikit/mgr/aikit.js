@@ -53,7 +53,7 @@ class AIKit {
         const chatListButton = document.createElement('button');
         chatListButton.textContent = 'Chats';
         chatListButton.className = 'ai-assistant-chatlist-button';
-        chatListButton.addEventListener('click', () => this.renderChatsList());
+        chatListButton.addEventListener('click', () => this.toggleChatsList());
 
         const closeButton = document.createElement('button');
         closeButton.textContent = 'Close';
@@ -65,8 +65,14 @@ class AIKit {
         const mainContent = document.createElement('div');
         mainContent.className = 'ai-assistant-main';
 
-        const messageContainer = document.createElement('div');
-        mainContent.appendChild(messageContainer);
+        this.messageContainer = document.createElement('div');
+        this.messageContainer.className = 'ai-assistant-message-container';
+        mainContent.appendChild(this.messageContainer);
+
+        // Create the chat list container
+        this.chatListContainer = document.createElement('div');
+        this.chatListContainer.className = 'chat-list-container';
+        mainContent.appendChild(this.chatListContainer);
 
         // Compose message box
         const footer = document.createElement('div');
@@ -106,24 +112,42 @@ class AIKit {
             .catch(error => console.error('Error fetching conversations:', error));
     }
 
-    // Render chats list
+    // Render the sliding chats list
+    toggleChatsList()
+    {
+        if (this.chatListContainer.classList.contains('visible')) {
+            this.chatListContainer.classList.remove('visible');
+        } else {
+            this.chatListContainer.classList.add('visible');
+        }
+    }
+
     renderChatsList(conversations = [])
     {
-        const mainContent = this.rootElement.querySelector('.ai-assistant-main');
-        if (!mainContent) {
-            return;
+        // (Re-)populate the chat list
+        if (Object.keys(conversations).length > 0) {
+            this.chatListContainer.innerHTML = '';
+            Object.values(conversations).forEach(chat => {
+                const chatItem = document.createElement('div');
+                chatItem.className = 'chat-item';
+                chatItem.textContent = `${chat.title} (By: ${chat.started_by})`;
+                chatItem.addEventListener('click', () => {
+                    this.openChat(chat.id);
+                    this.closeChatList(); // Close the chat list after selection
+                });
+                this.chatListContainer.appendChild(chatItem);
+            });
         }
-
-        mainContent.innerHTML = ''; // Clear main content
-
-        Object.values(conversations).forEach(chat => {
-            const chatItem = document.createElement('div');
-            chatItem.className = 'chat-item';
-            chatItem.textContent = `${chat.title} (By: ${chat.started_by})`;
-            chatItem.addEventListener('click', () => this.openChat(chat.id));
-            mainContent.appendChild(chatItem);
-        });
     }
+
+    // Close the sliding chat list
+    closeChatList()
+    {
+        if (this.chatListContainer) {
+            this.chatListContainer.classList.remove('visible');
+        }
+    }
+
 
     // Open chat and fetch messages
     openChat(conversationId)
@@ -138,25 +162,14 @@ class AIKit {
     // Render chat messages
     renderChatMessages(messages = [])
     {
-        console.log('messages', messages);
-        const mainContent = this.rootElement.querySelector('.ai-assistant-main');
-        if (!mainContent) {
-            return;
-        }
-
-        mainContent.innerHTML = ''; // Clear chat view
-
-        const messagesContainer = document.createElement('div');
-        messagesContainer.className = 'messages-container';
+        this.messageContainer.innerHTML = ''; // Clear chat view
 
         Object.values(messages).forEach(message => {
             const messageEl = document.createElement('div');
             messageEl.className = `message ${message.user_role}`;
             messageEl.textContent = `${message.user || 'System'}: ${message.content}`;
-            messagesContainer.appendChild(messageEl);
+            this.messageContainer.appendChild(messageEl);
         });
-
-        mainContent.appendChild(messagesContainer);
     }
 
     // Send a message
@@ -174,7 +187,8 @@ class AIKit {
                     const jsonResponse = await response.json();
                     if (response.status === 201) {
                         this.currentConversation = jsonResponse.data.id; // Store the new conversation ID
-                        this.sendMessage(textarea, messageContainer)
+                        this.sendMessage(textarea, messageContainer);
+                        this.fetchConversations();
                     } else {
                         console.error('Error creating a new conversation:', jsonResponse.error || 'Unknown error');
                     }
