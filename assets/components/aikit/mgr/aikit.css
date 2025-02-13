@@ -1,0 +1,130 @@
+#aikit-assistant * {
+    box-sizing: border-box;
+}
+
+
+/* CSS for AIKit styles */
+
+/* Button for opening the assistant */
+.ai-assistant-open-button {
+    color: white;
+    padding: 12px 0;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    background: transparent;
+    border: none;
+    display: block;
+    width: 100%;
+    text-align: center;
+    margin-top: 4px;
+}
+
+.ai-assistant-open-button:hover {
+    cursor: pointer;
+    opacity: 0.7;
+}
+
+/* Assistant container */
+.ai-assistant-container {
+    position: fixed;
+    top: 0;
+    left: 70px;
+    width: 420px;
+    height: 80%;
+    background-color: #f8f9fa;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Header of the assistant */
+.ai-assistant-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background-color: #234368;
+    color: white;
+    font-weight: bold;
+}
+
+.ai-assistant-header button {
+    background: transparent;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+.ai-assistant-header button:hover {
+    text-decoration: underline;
+}
+
+/* Main content area */
+.ai-assistant-main {
+    flex: 1;
+    padding: 10px;
+    overflow-y: auto;
+    background-color: #fff;
+}
+
+/* Footer for compose message box */
+.ai-assistant-footer {
+    padding: 10px;
+    border-top: 1px solid #ddd;
+}
+
+.ai-assistant-textarea {
+    width: 100%;
+    height: 60px;
+    resize: none;
+    padding: 10px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.ai-assistant-footer button {
+    margin-top: 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+/* Chat item styling */
+.chat-item {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+    cursor: pointer;
+}
+
+.chat-item:hover {
+    background-color: #f1f1f1;
+}
+
+/* Messages container styles */
+.messages-container {
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    overflow-y: auto;
+}
+
+/* Individual messages styling */
+.message {
+    margin-bottom: 10px;
+}
+
+.message.user {
+    text-align: right;
+    color: blue;
+}
+
+.message.system {
+    text-align: left;
+    color: gray;
+}

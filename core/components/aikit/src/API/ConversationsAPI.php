@@ -64,7 +64,7 @@ class ConversationsAPI implements ApiInterface
         // @todo allow the creation of a conversation to add its own system prompt (like provide current context)
 
         return $conversation->save()
-            ? $this->createJsonResponse($conversation->toArray(), 201)
+            ? $this->createJsonResponse(['data' => $conversation->toArray()], 201)
             : $this->createJsonResponse(['error' => 'Failed to create conversation'], 500);
     }
 
