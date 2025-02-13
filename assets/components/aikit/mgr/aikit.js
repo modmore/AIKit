@@ -14,7 +14,6 @@ class AIKit {
     {
         this.rootElement = rootElement;
         this.renderAssistantButton();
-
         this.config = {...this.config, ...config};
     }
 
@@ -35,6 +34,7 @@ class AIKit {
         if (!this.assistantOpen) {
             this.renderAssistant();
             this.fetchConversations();
+            this.openChat(1)
         } else {
             this.closeAssistant();
         }
@@ -68,6 +68,7 @@ class AIKit {
         this.messageContainer = document.createElement('div');
         this.messageContainer.className = 'ai-assistant-message-container';
         mainContent.appendChild(this.messageContainer);
+        this.messageRenderer = new MessageRenderer(this.messageContainer);
 
         // Create the chat list container
         this.chatListContainer = document.createElement('div');
@@ -162,14 +163,7 @@ class AIKit {
     // Render chat messages
     renderChatMessages(messages = [])
     {
-        this.messageContainer.innerHTML = ''; // Clear chat view
-
-        Object.values(messages).forEach(message => {
-            const messageEl = document.createElement('div');
-            messageEl.className = `message ${message.user_role}`;
-            messageEl.textContent = `${message.user || 'System'}: ${message.content}`;
-            this.messageContainer.appendChild(messageEl);
-        });
+        this.messageRenderer.renderMessages(Object.values(messages));
     }
 
     // Send a message
@@ -229,5 +223,178 @@ class AIKit {
                 loadingIndicator.textContent = 'Error sending message.';
                 console.error('Error sending message:', error);
             });
+    }
+}
+
+class MessageRenderer {
+    constructor(messageContainer)
+    {
+        this.messageContainer = messageContainer;
+        this.renderedMessages = new Map(); // To track rendered messages by their IDs
+    }
+
+    renderMessages(messages)
+    {
+        // Loop through incoming messages
+        messages.forEach(message => {
+            const { id, user_role, user, content, status } = message;
+
+            // Check if the message is already rendered and hasn't changed
+            const existingMessageEl = this.renderedMessages.get(id);
+            if (existingMessageEl) {
+                if (existingMessageEl.dataset.content === content && existingMessageEl.dataset.status === status) {
+                    return; // Skip re-rendering unchanged messages
+                }
+
+                // Update existing message's content if it's updated
+                this.updateMessageElement(existingMessageEl, message);
+            } else {
+                // Create new element for the message
+                const messageEl = this.createMessageElement(message);
+                this.messageContainer.appendChild(messageEl);
+                this.renderedMessages.set(id, messageEl);
+            }
+        });
+
+        // Clean up messages that are no longer in the input
+        const messageIds = messages.map(m => m.id);
+        [...this.renderedMessages.keys()].forEach(renderedId => {
+            if (!messageIds.includes(renderedId)) {
+                const messageEl = this.renderedMessages.get(renderedId);
+                this.messageContainer.removeChild(messageEl);
+                this.renderedMessages.delete(renderedId);
+            }
+        });
+    }
+
+    createMessageElement(msg)
+    {
+        let { id, user_role, user, content, status } = msg;
+
+        const messageEl = document.createElement('div');
+        messageEl.className = `message ${user_role}`;
+        messageEl.dataset.id = id; // Store ID as a data attribute
+        messageEl.dataset.content = content; // Store content to detect updates
+        messageEl.dataset.status = status; // Store status for tools to detect updates
+
+        // Render differently based on user_role
+        if (user_role === 'developer') {
+            messageEl.innerHTML = `
+                <div class="developer-pill" onclick="toggleExpand('${id}')">
+                    Assistant Instructions
+                </div>
+                <div class="developer-content hidden" id="message-content-${id}">
+                    ${content}
+                </div>
+            `;
+        } else if (user_role === 'user') {
+            messageEl.innerHTML = `
+                <div class="user-message">
+                    <div class="username-bubble">${user}</div>
+                    <div class="user-prompt">${content}</div>
+                </div>
+            `;
+        } else if (user_role === 'assistant') {
+            if (Object.values(msg.tool_calls).length > 0) {
+                const toolCallsContent = msg.tool_calls.map((toolCall, index) => {
+                    console.log(toolCall);
+                    const args = toolCall.function.arguments;
+                    return `
+    <div class="tool-pill processing" id="tool-${toolCall.id}" data-index="${index}">
+        <div class="tool-title" >
+            ${toolCall.function.name}
+        </div>
+        <div class="tool-arguments arguments-${index}" style="display: none;">
+            <pre>${args}</pre>
+        </div>
+    </div>
+    `;
+                }).join('');
+                messageEl.innerHTML += `
+    <div class="assistant-tool-calls">
+        ${toolCallsContent}
+    </div>
+`;
+
+                messageEl.addEventListener('click', (e) => {
+                    const toolPill = e.target.closest('.tool-pill');
+                    if (toolPill) {
+                        const argumentsElement = toolPill.querySelector('.tool-arguments');
+                        if (argumentsElement) {
+                            argumentsElement.style.display = (argumentsElement.style.display === 'none') ? 'block' : 'none';
+                        }
+
+                        const contentElement = toolPill.querySelector('.tool-content');
+                        if (contentElement) {
+                            contentElement.style.display = (contentElement.style.display === 'none') ? 'block' : 'none';
+                        }
+                    }
+                });
+            }
+            else {
+                messageEl.innerHTML = `
+                    <div class="assistant-message">
+                        ${content}
+                    </div>
+                `;
+            }
+        } else if (user_role === 'tool') {
+            let toolCallEl = this.messageContainer.querySelector('#tool-' + msg.tool_call_id);
+            if (toolCallEl) {
+                content = this.parseToolContent(content);
+
+                toolCallEl.classList.add('done');
+                toolCallEl.innerHTML += `
+                    <pre class="tool-content" style="display: none;">${content}</pre>
+                `;
+                return messageEl;
+            }
+
+            messageEl.innerHTML = `
+                <div class="tool-pill finished">
+                    <span class="tool-title">${user_role}</span>
+                    <div class="tool-content">${this.parseToolContent(content)}</div>
+                </div>
+            `;
+        }
+
+
+        return messageEl;
+    }
+
+    parseToolContent(content)
+    {
+        content = JSON.stringify(JSON.parse(content),null,2);
+        return content.replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+    }
+
+    updateMessageElement(existingMessageEl, { content, status })
+    {
+        // Update content and status if changed
+        existingMessageEl.dataset.content = content;
+        existingMessageEl.dataset.status = status;
+
+        // Update rendering logic if necessary
+        if (existingMessageEl.classList.contains('tool-pill')) {
+            // For tools, we might want to update the status or include the content if it's done
+            const toolContentEl = existingMessageEl.querySelector('.tool-content');
+            if (status === 'done' && !toolContentEl) {
+                const contentEl = document.createElement('div');
+                contentEl.className = 'tool-content';
+                contentEl.textContent = content;
+                existingMessageEl.appendChild(contentEl);
+            }
+        }
+    }
+}
+
+// Example toggle logic for developer pills
+function toggleExpand(messageId)
+{
+    const contentEl = document.getElementById(`message - content - ${messageId}`);
+    if (contentEl) {
+        contentEl.classList.toggle('hidden');
     }
 }

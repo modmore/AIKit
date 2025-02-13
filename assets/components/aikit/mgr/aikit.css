@@ -117,7 +117,7 @@
 
 /* Individual messages styling */
 .message {
-    margin-bottom: 10px;
+    /*margin-bottom: 10px;*/
 }
 
 .message.user {
@@ -162,4 +162,168 @@
 
 .chat-item:hover {
     background-color: #e0e0e0;
+}
+
+/* General message container styles */
+.message-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem;
+    background-color: #f9f9f9;
+    max-width: 800px;
+    margin: auto;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.message {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Developer messages */
+.message.developer {
+    align-self: flex-start;
+}
+
+.developer-pill {
+    padding: 0.5rem 1rem;
+    background-color: #ffeeba; /* Light yellow for prominence */
+    font-size: 0.875rem;
+    font-weight: bold;
+    color: #856404; /* Dark yellowish-brown text */
+    border: 1px solid #ffe8a1;
+    border-radius: 20px;
+    cursor: pointer;
+    text-align: center;
+    max-width: fit-content;
+    margin-bottom: 0.5rem;
+    transition: background-color 0.2s ease;
+}
+
+.developer-pill:hover {
+    background-color: #ffd966; /* Slightly darker yellow on hover */
+}
+
+.developer-content {
+    padding: 0.75rem;
+    background-color: #fffdf3;
+    font-size: 0.875rem;
+    color: #6c757d; /* Muted gray */
+    border: 1px solid #ffe8a1;
+    border-radius: 8px;
+    display: none;
+}
+
+.developer-content.hidden {
+    display: none; /* Hidden by default */
+}
+
+.developer-content.visible {
+    display: block; /* Shown when expanded */
+}
+
+.user-message, .tool-pill, .assistant-message {
+    margin-bottom: 0.5rem;
+}
+
+/* User messages */
+.message.user {
+    align-self: flex-end;
+    text-align: right;
+    max-width: 85%;
+    margin-left: auto;
+}
+
+.user-message {
+    background-color: #c6daf2;
+    color: #53595F;
+    padding: 0.75rem 1rem;
+    border-radius: 20px;
+    border-bottom-right-radius: 5px; /* Slightly sharper edge */
+    position: relative;
+}
+
+.username-bubble {
+    font-size: 0.75rem;
+    color: #555; /* Grayish username bubble */
+    margin-bottom: 0.25rem;
+    text-align: right;
+    font-weight: bold;
+}
+
+/* Assistant messages */
+.message.assistant {
+    align-self: flex-start;
+    text-align: left;
+}
+
+.assistant-message {
+    /*background-color: #e9ecef; !* Light gray speech bubble *!*/
+    /*color: #212529; !* Dark text *!*/
+    /*font-size: 1rem;*/
+    /*padding: 0.75rem 1rem;*/
+    /*border-radius: 20px;*/
+    /*border-bottom-left-radius: 5px; !* Slightly sharper corner *!*/
+    /*box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);*/
+}
+
+/* Tool messages */
+.message.tool {
+    align-self: flex-start;
+}
+.assistant-tool-calls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.tool-pill {
+    padding: 0.5rem 1rem;
+    background-color: #d1ecf1; /* Light cyan */
+    border: 1px solid #bee5eb; /* Cyan border */
+    border-radius: 10px;
+    color: #0c5460; /* Dark cyan text */
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.tool-pill:hover {
+    background-color: #c5e9f0; /* Slightly darker cyan on hover */
+}
+
+.tool-title {
+    font-weight: bold;
+}
+
+/*.tool-status {*/
+/*    font-size: 0.75rem;*/
+/*    padding: 0.25rem 0.5rem;*/
+/*    border-radius: 8px;*/
+/*}*/
+
+.tool-pill.processing {
+    background-color: #ffeeba; /* Light yellow for "processing" */
+    color: #856404; /* Dark yellow text */
+}
+
+.tool-pill.done {
+    background-color: #d4edda; /* Light green for "done" */
+    color: #155724; /* Dark green text */
+}
+
+.tool-content {
+    margin-top: 0.5rem;
+    padding: 0.75rem;
+    background-color: #f8f9fa; /* Slightly lighter gray */
+    font-size: 0.875rem;
+    color: #212529; /* Standard dark text */
+    border: 1px solid #d6d8db; /* Very light border */
+    border-radius: 8px;
+}
+
+/* Utility classes */
+.hidden {
+    display: none;
 }
