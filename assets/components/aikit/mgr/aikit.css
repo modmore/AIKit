@@ -87,7 +87,6 @@
 }
 
 .ai-assistant-footer button {
-    margin-top: 10px;
     background-color: #007bff;
     color: white;
     border: none;
@@ -347,4 +346,92 @@
 /* Utility classes */
 .hidden {
     display: none;
+}
+
+
+.new-chat-button {
+    display: block;
+    margin: 10px auto;
+    padding: 10px 20px;
+    background-color: #d1ecf1; /* Light cyan */
+    color: #0c5460; /* Dark cyan text */
+    border: 1px solid #bee5eb; /* Cyan border */
+    border-radius: 5px;
+    font-size: 1rem;
+    font-weight: bold;
+    text-align: center;
+    cursor: pointer;
+    transition: background-color 0.2s ease, box-shadow 0.2s ease;
+    width: 90%;
+    max-width: 260px;
+}
+
+.new-chat-button:hover {
+    background-color: #c5e9f0; /* Slightly darker cyan on hover */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle hover effect */
+}
+/* Wrapper for the textarea and send button */
+.ai-assistant-footer {
+    display: flex;
+    align-items: flex-end;
+    gap: 10px; /* Spacing between textarea and button */
+}
+
+/* Textarea styles - auto-growing input */
+.ai-assistant-textarea {
+    flex-grow: 1; /* Make it expand to take available width */
+    resize: none; /* Prevent manual resizing */
+    padding: 10px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    overflow-y: auto; /* Hide scrollbar when not needed */
+    min-height: 100px;
+    max-height: 400px;
+}
+.ai-assistant-button-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+/* Send button styling */
+.ai-assistant-send-button {
+    background-color: #007bff;
+    border: none;
+    color: white;
+    padding: 10px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex: 1;
+}
+
+/* Hover effect for send button */
+.ai-assistant-send-button:hover {
+    background-color: #0056b3;
+}
+
+/* Settings link/icon below the message container */
+.ai-assistant-settings {
+    display: block;
+    margin-top: 10px !important;
+    text-align: center;
+    font-size: 14px;
+    text-decoration: none;
+    cursor: pointer;
+    color: #007bff !important;
+
+}
+
+.ai-assistant-settings i {
+    margin-right: 5px; /* Optional spacing between icon and text */
+    color: #007bff !important;
+}
+
+/* Hover effect for settings link */
+.ai-assistant-settings:hover {
+    text-decoration: underline;
 }

@@ -51,7 +51,7 @@ class AIKit {
         header.className = 'ai-assistant-header';
 
         const chatListButton = document.createElement('button');
-        chatListButton.textContent = 'Chats';
+        chatListButton.textContent = 'Chat History';
         chatListButton.className = 'ai-assistant-chatlist-button';
         chatListButton.addEventListener('click', () => this.toggleChatsList());
 
@@ -73,21 +73,59 @@ class AIKit {
         // Create the chat list container
         this.chatListContainer = document.createElement('div');
         this.chatListContainer.className = 'chat-list-container';
-        mainContent.appendChild(this.chatListContainer);
 
+        const newChatButton = document.createElement('button');
+        newChatButton.textContent = 'New Chat';
+        newChatButton.className = 'new-chat-button';
+        newChatButton.addEventListener('click', () => {
+            this.messageRenderer.reset(); // Reset the message renderer
+            this.currentConversation = null;
+            this.toggleChatsList();
+            const textarea = this.rootElement.querySelector('.ai-assistant-textarea');
+            if (textarea) {
+                textarea.focus(); // Focus the chat input
+            }
+        });
+        this.chatListContainer.appendChild(newChatButton);
+        
+        mainContent.appendChild(this.chatListContainer);
         // Compose message box
         const footer = document.createElement('div');
         footer.className = 'ai-assistant-footer';
 
+        // Textarea for typing messages
         const textarea = document.createElement('textarea');
         textarea.className = 'ai-assistant-textarea';
+        textarea.placeholder = 'Type your message...';
 
+        // Automatically grow textarea to fit content as the user types
+        textarea.addEventListener('input', function () {
+            this.style.height = 'auto'; // Reset height first
+            this.style.height = `${this.scrollHeight + 2}px`; // Adjust to content's height
+        });
+
+        // Container for send button and settings link
+        const buttonContainer = document.createElement('div');
+        buttonContainer.className = 'ai-assistant-button-container';
+
+        // Send button with Font Awesome icon
         const sendButton = document.createElement('button');
-        sendButton.textContent = 'Send';
+        sendButton.className = 'ai-assistant-send-button'; // Add class for custom styling
+        sendButton.innerHTML = '<i class="icon icon-paper-plane"></i>'; // Font Awesome send icon
+
         sendButton.addEventListener('click', () => this.sendMessage(textarea, this.messageContainer));
 
+        // Settings link/icon below the send button
+        const settingsLink = document.createElement('a');
+        settingsLink.href = MODx.config.manager_url + '?a=configuration&namespace=aikit'; // Replace with the actual path
+        settingsLink.className = 'ai-assistant-settings';
+        settingsLink.innerHTML = '<i class="icon icon-cog"></i>'; // Font Awesome settings icon
+
+        buttonContainer.appendChild(sendButton);
+        buttonContainer.appendChild(settingsLink);
+
         footer.appendChild(textarea);
-        footer.appendChild(sendButton);
+        footer.appendChild(buttonContainer);
 
         assistantContainer.appendChild(header);
         assistantContainer.appendChild(mainContent);
@@ -127,7 +165,8 @@ class AIKit {
     {
         // (Re-)populate the chat list
         if (Object.keys(conversations).length > 0) {
-            this.chatListContainer.innerHTML = '';
+            const chatItems = this.chatListContainer.querySelectorAll('.chat-item');
+            chatItems.forEach(chatItem => chatItem.remove());
             Object.values(conversations).forEach(chat => {
                 const chatItem = document.createElement('div');
                 chatItem.className = 'chat-item';
