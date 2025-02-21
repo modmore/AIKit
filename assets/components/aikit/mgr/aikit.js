@@ -34,7 +34,6 @@ class AIKit {
         if (!this.assistantOpen) {
             this.renderAssistant();
             this.fetchConversations();
-            this.openChat(1)
         } else {
             this.closeAssistant();
         }
