@@ -30,14 +30,15 @@ class OpenAI implements ModelInterface
         $this->requestFactory = $this->modx->services->get(\Psr\Http\Message\RequestFactoryInterface::class);
         $this->tools = $tools;
 
-        // @fixme move to some model configuration of sorts
-        $this->config['api_key'] = $this->modx->getOption('aikit.openai_api_key');
+        $this->config['api_key'] = $this->config['api_key'] ?? $this->modx->getOption('aikit.openai_api_key');
+        $this->config['model'] = $this->config['model'] ?? $this->modx->getOption('aikit.openai_model', null, 'gpt-4o-mini', true);
+        $this->config['endpoint'] = $this->config['endpoint'] ?? $this->modx->getOption('aikit.openai_endpoint', null, 'https://api.openai.com/v1/', true);
     }
 
     public function send(Conversation $conversation): ModelResponse
     {
         $requestData = [
-            'model' => $this->config['model'] ?? 'gpt-4o-mini', // Default to 'gpt-4o-mini' or use a different configured model
+            'model' => $this->config['model'], // Default to 'gpt-4o-mini' or use a different configured model
             'messages' => array_values(array_map([$this, 'prepareMessage'], $conversation->getMany('Messages'))),
             'tools' => $this->getToolsDefinitions()
         ];
@@ -45,7 +46,7 @@ class OpenAI implements ModelInterface
         $requestBody = json_encode($requestData, JSON_THROW_ON_ERROR);
 
         $request = $this->requestFactory
-            ->createRequest('POST', 'https://api.openai.com/v1/chat/completions')
+            ->createRequest('POST', $this->config['endpoint'] . 'chat/completions')
             ->withHeader('Authorization', 'Bearer ' . ($this->config['api_key'] ?? ''))
             ->withHeader('Content-Type', 'application/json')
             ->withBody(\GuzzleHttp\Psr7\Utils::streamFor($requestBody));

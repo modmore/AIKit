@@ -143,6 +143,21 @@ if ($policyTemplate) {
     }
 }
 
+
+$settings = include dirname(__DIR__) . '/_build/data/transport.settings.php';
+$update = false;
+foreach ($settings as $key => $setting) {
+    /** @var modSystemSetting $setting */
+    $exists = $modx->getObject('modSystemSetting', array('key' => 'aikit.'.$key));
+    if (!($exists instanceof modSystemSetting)) {
+        $setting->save();
+    }
+    elseif ($update && ($exists instanceof modSystemSetting)) {
+        $exists->fromArray($setting->toArray(), '', true);
+        $exists->save();
+    }
+}
+
 $manager = $modx->getManager();
 
 /* Create the tables */
