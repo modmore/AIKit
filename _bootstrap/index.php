@@ -178,6 +178,7 @@ $exTools = [
     \modmore\AIKit\LLM\Tools\GetCurrentWeather::class,
     \modmore\AIKit\LLM\Tools\GetResourceDetails::class,
     \modmore\AIKit\LLM\Tools\FindResources::class,
+    \modmore\AIKit\LLM\Tools\CreateResource::class,
 ];
 foreach ($exTools as $tool) {
     if (!$modx->getCount(\modmore\AIKit\Model\Tool::class, ['class' => $tool])) {
