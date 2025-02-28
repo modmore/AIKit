@@ -35,7 +35,7 @@ class FindResources implements ToolInterface
      */
     public function getToolDescription(): string
     {
-        return 'Gives you real time access to find pages, resources, links, and other public information on the website. Use context queues from the user prompt to identify if the user is asking about or incorporating content that may be relevant to pages of the website, webshop, or gallery pages. You can also use opportunistic searching or use this to double check references and insert links to related pages on the website. Use the Resource ID from the response with the get_resource_details tool to load detailed resource information.';
+        return 'Gives you real time access to find pages, resources, links, and other public information on the website. Always look for context queues from the user to indicate if it references information that may exist on the website. Always double check references instead of making up information you don\'t have. Insert links to related pages on the website. Use the Resource ID from the response with the get_resource_details tool to load detailed resource information.';
     }
 
     /**
