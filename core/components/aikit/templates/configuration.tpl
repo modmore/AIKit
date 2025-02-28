@@ -34,7 +34,11 @@
                                                         <hr>
                                                         <h3>Model Configuration</h3>
                                                         <p>Choose your preferred AI provider and model. Select from OpenAI, Gemini, etc. Dropdown for available models for each provider. For OpenAI specifically make sure there is an endpoint (url) option cause many LLM providers are OpenAI-compatible, including DeepSeek.</p>
-
+                                                        <p style="margin-top: 1em;">
+                                                            Using LLM: <b>{$settings['aikit.model']}</b><br>
+                                                            Using OpenAI Endpoint: <b>{$settings['aikit.openai_endpoint']}</b><br>
+                                                            Using OpenAI Model: <b>{$settings['aikit.openai_model']}</b><br>
+                                                        </p>
 
                                                         {section name=toolIdx loop=$tools}
                                                             <hr>

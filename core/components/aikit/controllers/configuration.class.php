@@ -25,12 +25,20 @@ use modmore\AIKit\Model\Tool;
 class AikitConfigurationManagerController extends \MODX\Revolution\modExtraManagerController
 {
     /**
+     * @return string
+     */
+    public function getPageTitle(): string
+    {
+        return $this->modx->lexicon('aikit.configuration');
+    }
+    /**
      * Initializes the main manager controller. In this case we set up the
      * Commerce class and add the shared javascript on all controllers.
      */
     public function initialize()
     {
         $this->setPlaceholder('tools', $this->getTools());
+        $this->setPlaceholder('settings', $this->getAiKitSystemSettings());
     }
 
     /**
@@ -76,5 +84,20 @@ class AikitConfigurationManagerController extends \MODX\Revolution\modExtraManag
         }
 
         return $tools;
+    }
+
+    private function getAiKitSystemSettings(): array
+    {
+        $settings = [];
+        $c = $this->modx->newQuery(\MODX\Revolution\modSystemSetting::class);
+        $c->where([
+            'key:LIKE' => 'aikit.%',
+        ]);
+        /** @var \MODX\Revolution\modSystemSetting $setting */
+        foreach ($this->modx->getIterator(\MODX\Revolution\modSystemSetting::class, $c) as $setting) {
+            $settings[$setting->get('key')] = $setting->get('value');
+        }
+
+        return $settings;
     }
 }
