@@ -58,7 +58,13 @@ class AwaitAPI implements ApiInterface
                 ]);
 
                 // Prepare the new messages as an array of their data
-                $newMessages = array_map(static fn($message) => $message->toArray(), $messages);
+                $newMessages = array_map(static function($message) {
+                    $a = $message->toArray();
+                    if ($user = $message->getOne('User')) {
+                        $a['user_username'] = $user->get('username');
+                    }
+                    return $a;
+                }, $messages);
                 return $this->createJsonResponse(['data' => $newMessages], 200);
             }
 
