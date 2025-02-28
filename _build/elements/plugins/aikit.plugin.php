@@ -12,7 +12,7 @@ switch ($modx->event->name) {
         $controller->addHtml(<<<HTML
 <script>
 (() => {
-    MODx.on('ready', () => {
+    Ext.onReady(() => {
         const assistentElement = document.createElement('li');
         assistentElement.id = 'aikit-assistant';
         
