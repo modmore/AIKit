@@ -1,0 +1,6 @@
+AIKit 0.1.0-pl
+-----------------
+Released on 2025-03-01
+
+- First packaged release.
+
