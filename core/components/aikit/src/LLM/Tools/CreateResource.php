@@ -36,7 +36,7 @@ class CreateResource implements ToolInterface
      */
     public function getToolDescription(): string
     {
-        return 'Create a new resource based on the users prompt. BEFORE calling this function, require the user to approve the creating resource in a separate message. Show each of the parameters and the values you will use.';
+        return 'Create a new resource based on the users prompt. Before calling this function, require the user to approve the creating resource in a separate message. Show each of the parameters and the values you will use.';
     }
 
     /**
