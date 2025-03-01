@@ -4,6 +4,7 @@ namespace modmore\AIKit\LLM;
 
 use modmore\AIKit\LLM\Models\OpenAI;
 use modmore\AIKit\LLM\Tools\ToolInterface;
+use modmore\AIKit\LLM\Vectors\VectorDatabaseInterface;
 use modmore\AIKit\Model\Conversation;
 use modmore\AIKit\Model\Message;
 use modmore\AIKit\Model\Tool;
@@ -30,6 +31,38 @@ class Model
 
     public function send(Conversation $conversation)
     {
+        if ($vectorDb = $this->getVectorDatabase()) {
+            $c = $this->modx->newQuery(Message::class);
+            $c->where([
+             'conversation' => $conversation->get('id'),
+             'user_role' => Message::ROLE_USER
+            ]);
+            $c->sortby('created_on', 'DESC');
+            $c->limit(1);
+            // Get last user message to use for vector search
+            $lastUserMessage = $this->modx->getObject(Message::class, $c);
+
+            // If we have a last user message, query for relevant context
+            if ($lastUserMessage && !$lastUserMessage->get('is_vector_augmented')) {
+                $lastUserMessage->set('is_vector_augmented', true);
+                $lastUserMessage->save();
+
+                $context = $vectorDb->augmentChatCompletion($lastUserMessage->get('content'));
+                if (!empty($context)) {
+                    /** @var Message $contextMessage */
+                    $contextMessage = $this->modx->newObject(Message::class);
+                    $contextMessage->fromArray([
+                        'conversation' => $conversation->get('id'),
+                        'user_role' => Message::ROLE_DEVELOPER,
+                        'content' => $context,
+                        'created_on' => time(),
+                    ]);
+                    $contextMessage->save();
+                    $conversation->addMany($contextMessage);
+                }
+            }
+        }
+
         // Send all messages to the LLM
         $response = $this->model->send($conversation);
 
@@ -104,5 +137,18 @@ class Model
                 $this->modx->log(modX::LOG_LEVEL_ERROR, 'Failed to load tool ' . $tool->get('id') . ': ' . $e->getMessage() . ' / ' . $e->getTraceAsString());
             }
         }
+    }
+
+    public function getVectorDatabase(): ?VectorDatabaseInterface
+    {
+        try {
+            $class = $this->modx->getOption('aikit.vector_database', null, '', true);
+            if (!empty($class) && is_subclass_of($class, VectorDatabaseInterface::class, true)) {
+                return new $class($this->modx);
+            }
+        } catch (\Throwable $e) {
+            $this->modx->log(modX::LOG_LEVEL_ERROR, 'Failed to load vector database: ' . $e->getMessage() . ' / ' . $e->getTraceAsString());
+        }
+        return null;
     }
 }

@@ -108,6 +108,15 @@ if ($plugin) {
     ) {
         echo "Error creating modPluginEvent for AIKit Plugin.\n";
     }
+    if (
+        !createObject('modPluginEvent', array(
+            'pluginid' => $plugin->get('id'),
+            'event' => 'OnDocFormSave',
+            'priority' => 0,
+        ), array('pluginid', 'event'), false)
+    ) {
+        echo "Error creating modPluginEvent for AIKit Plugin.\n";
+    }
 }
 
 if (
@@ -184,6 +193,8 @@ echo "Creating tables...\n";
 foreach ($objectContainers as $oC) {
     $manager->createObjectContainer($oC);
 }
+
+$manager->addField(\modmore\AIKit\Model\Message::class, 'is_vector_augmented', ['after' => 'tool_call_id']);
 
 $modx->getCacheManager()->refresh();
 

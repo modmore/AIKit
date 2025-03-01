@@ -1,5 +1,7 @@
 <?php
 
+use modmore\AIKit\LLM\Vectors\Pinecone;
+
 $settingSource = [
     'model' => [
         'area' => 'configuration',
@@ -31,6 +33,23 @@ PROMPT,
     'openai_endpoint' => [
         'area' => 'openai',
         'value' => 'https://api.openai.com/v1/',
+    ],
+
+    'vector_database' => [
+        'area' => 'model',
+        'value' => Pinecone::class,
+    ],
+    'pinecone_endpoint' => [
+        'area' => 'pinecone',
+        'value' => '',
+    ],
+    'pinecone_api_key' => [
+        'area' => 'pinecone',
+        'value' => '',
+    ],
+    'pinecone_content_index' => [
+        'area' => 'pinecone',
+        'value' => '',
     ],
 ];
 

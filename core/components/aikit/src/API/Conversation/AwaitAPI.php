@@ -51,7 +51,6 @@ class AwaitAPI implements ApiInterface
             ]);
 
             if ($messageCount > 0) {
-                // @todo add missing user_username value
                 $messages = $this->modx->getCollection(Message::class, [
                     'conversation' => $conversationId,
                     'id:>' => $lastMessage,
