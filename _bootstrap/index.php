@@ -97,6 +97,19 @@ if (
     echo "Error creating AIKit Plugin.\n";
 }
 
+$plugin = $modx->getObject('modPlugin', array('name' => 'AIKit'));
+if ($plugin) {
+    if (
+        !createObject('modPluginEvent', array(
+            'pluginid' => $plugin->get('id'),
+            'event' => 'OnManagerPageBeforeRender',
+            'priority' => 0,
+        ), array('pluginid', 'event'), false)
+    ) {
+        echo "Error creating modPluginEvent for AIKit Plugin.\n";
+    }
+}
+
 if (
     !createObject('modMenu', array(
     'text' => 'aikit.configuration',
