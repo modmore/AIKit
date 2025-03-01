@@ -84,6 +84,8 @@ class OpenAI implements ModelInterface
         if ($message->get('user') > 0) {
             $user = $message->getOne('User');
         }
+        $username = $user ? $user->get('username') : '';
+        $username = preg_replace('/[^a-zA-Z0-9_-]/', '', $username);
 
         switch ($message->get('user_role')) {
             case Message::ROLE_TOOL:
@@ -101,7 +103,7 @@ class OpenAI implements ModelInterface
                     'role' => $message->get('user_role'), // Example: 'developer', 'user', 'assistant'
                     'content' => $message->get('content'),
                     'tool_calls' => $message->get('tool_calls'),
-                    'name' => $user ? $user->get('username') : '',
+                    'name' => $username,
                 ]);
         }
     }
