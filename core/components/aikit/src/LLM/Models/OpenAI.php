@@ -37,13 +37,22 @@ class OpenAI implements ModelInterface
 
     public function send(Conversation $conversation): ModelResponse
     {
+        $c = $this->modx->newQuery(Message::class);
+        $c->where([
+            'conversation' => $conversation->get('id'),
+        ]);
+        $c->sortby('created_on', 'ASC');
+        $c->sortby('id', 'ASC');
+        $messages = $this->modx->getCollection(Message::class, $c);
+
         $requestData = [
             'model' => $this->config['model'], // Default to 'gpt-4o-mini' or use a different configured model
-            'messages' => array_values(array_map([$this, 'prepareMessage'], $conversation->getMany('Messages'))),
+            'messages' => array_values(array_map([$this, 'prepareMessage'], $messages)),
             'tools' => $this->getToolsDefinitions()
         ];
 
         $requestBody = json_encode($requestData, JSON_THROW_ON_ERROR);
+        $this->modx->log(modX::LOG_LEVEL_DEBUG, 'Sending request to OpenAI: ' . $requestBody,);
 
         $request = $this->requestFactory
             ->createRequest('POST', $this->config['endpoint'] . 'chat/completions')

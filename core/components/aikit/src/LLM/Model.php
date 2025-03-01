@@ -47,7 +47,7 @@ class Model
                 $lastUserMessage->set('is_vector_augmented', true);
                 $lastUserMessage->save();
 
-                $context = $vectorDb->augmentChatCompletion($lastUserMessage->get('content'));
+                $context = $vectorDb->query($lastUserMessage->get('content'));
                 if (!empty($context)) {
                     /** @var Message $contextMessage */
                     $contextMessage = $this->modx->newObject(Message::class);
@@ -65,6 +65,7 @@ class Model
 
         // Send all messages to the LLM
         $response = $this->model->send($conversation);
+        $this->modx->log(modX::LOG_LEVEL_INFO, print_r($response->getRawResponse(), true));
 
         // Create a message of the response
         /** @var Message $message */

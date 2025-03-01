@@ -4,6 +4,7 @@ namespace modmore\AIKit\LLM;
 
 class ModelResponse
 {
+    public const FINISH_REASON_ERROR = 'error';
     public const FINISH_REASON_STOP = 'stop';
     public const FINISH_REASON_LENGTH = 'length';
     public const FINISH_REASON_CONTENT_FILTER = 'content_filter';
@@ -23,12 +24,15 @@ class ModelResponse
 
     public function getFinishReason(): string
     {
+        if (!empty($this->response['error']['message'])) {
+            return self::FINISH_REASON_ERROR;
+        }
         return $this->response['choices'][0]['finish_reason'] ?? self::FINISH_REASON_STOP;
     }
 
     public function getResponseText(): string
     {
-        return $this->response['choices'][0]['message']['content'] ?? '';
+        return $this->response['choices'][0]['message']['content'] ?? $this->response['error']['message'] ?? '';
     }
 
     public function getPromptTokens(): int
