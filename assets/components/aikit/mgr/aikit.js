@@ -67,7 +67,8 @@ class AIKit {
         this.messageContainer = document.createElement('div');
         this.messageContainer.className = 'ai-assistant-message-container';
         mainContent.appendChild(this.messageContainer);
-        this.messageRenderer = new MessageRenderer(this.messageContainer);
+        // @todo showPrompt
+        this.messageRenderer = new MessageRenderer(this.messageContainer, this.config);
 
         // Create the chat list container
         this.chatListContainer = document.createElement('div');
@@ -297,10 +298,11 @@ class AIKit {
 }
 
 class MessageRenderer {
-    constructor(messageContainer)
+    constructor(messageContainer, config)
     {
         this.messageContainer = messageContainer;
         this.renderedMessages = new Map(); // To track rendered messages by their IDs
+        this.config = config;
     }
 
     reset()
@@ -314,6 +316,9 @@ class MessageRenderer {
         // Loop through incoming messages
         messages.forEach(message => {
             const { id, user_role, user, content, status } = message;
+            if (!this.config.showSystemPrompt && user_role === 'developer') {
+                return;
+            }
 
             // Check if the message is already rendered and hasn't changed
             const existingMessageEl = this.renderedMessages.get(id);
@@ -337,6 +342,12 @@ class MessageRenderer {
     {
         let { id, user_role, content, status } = msg;
 
+        const md = markdownit({
+            linkify: true,
+            typographer: true,
+            breaks: true,
+        });
+
         const messageEl = document.createElement('div');
         messageEl.className = `message ${user_role}`;
         messageEl.dataset.id = id; // Store ID as a data attribute
@@ -345,12 +356,11 @@ class MessageRenderer {
 
         // Render differently based on user_role
         if (user_role === 'developer') {
+            content = md.render(content);
             messageEl.innerHTML = `
-                <div class="developer-pill" onclick="toggleExpand('${id}')">
-                    Assistant Instructions
-                </div>
-                <div class="developer-content hidden" id="message-content-${id}">
-                    ${content}
+                <div class="developer-message">
+                    <div class="username-bubble">Assistant Instructions</div>
+                    <div class="developer-prompt">${content}</div>
                 </div>
             `;
         } else if (user_role === 'user') {
@@ -363,7 +373,6 @@ class MessageRenderer {
         } else if (user_role === 'assistant') {
             if (Object.values(msg.tool_calls).length > 0) {
                 const toolCallsContent = msg.tool_calls.map((toolCall, index) => {
-                    console.log(toolCall);
                     const args = toolCall.function.arguments;
                     return `
     <div class="tool-pill processing" id="tool-${toolCall.id}" data-index="${index}">
@@ -398,11 +407,6 @@ class MessageRenderer {
                 });
             }
             else {
-                const md = markdownit({
-                    linkify: true,
-                    typographer: true,
-                    breaks: true,
-                });
                 content = md.render(content);
 
                 messageEl.innerHTML = `
@@ -469,7 +473,7 @@ class MessageRenderer {
 // Example toggle logic for developer pills
 function toggleExpand(messageId)
 {
-    const contentEl = document.getElementById(`message - content - ${messageId}`);
+    const contentEl = document.getElementById("message-content-" + messageId);
     if (contentEl) {
         contentEl.classList.toggle('hidden');
     }

@@ -3,6 +3,7 @@
 namespace modmore\AIKit\API;
 
 use modmore\AIKit\Model\Conversation;
+use modmore\AIKit\Model\Message;
 use MODX\Revolution\modX;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -60,12 +61,17 @@ class ConversationsAPI implements ApiInterface
             'started_by' => $this->modx->user->get('id'),
         ]);
 
-        // @todo add in the system prompt
+        if (!$conversation->save()) {
+            return $this->createJsonResponse(['error' => 'Failed to create conversation'], 500);
+        }
+
+        if (!$this->addPrompt($conversation, (string)$this->modx->getOption('aikit.system_prompt'))) {
+            return $this->createJsonResponse(['error' => 'Failed to add system prompt'], 500);
+        }
+
         // @todo allow the creation of a conversation to add its own system prompt (like provide current context)
 
-        return $conversation->save()
-            ? $this->createJsonResponse(['data' => $conversation->toArray()], 201)
-            : $this->createJsonResponse(['error' => 'Failed to create conversation'], 500);
+        return $this->createJsonResponse(['data' => $conversation->toArray()], 201);
     }
 
     private function getPaginationParams(array $queryParams): array
@@ -96,5 +102,24 @@ class ConversationsAPI implements ApiInterface
         $response->getBody()->write(json_encode($data));
 
         return $response;
+    }
+
+    private function addPrompt(Conversation $conversation, string $prompt): bool
+    {
+        // Process MODX placeholders and tags
+        $this->modx->parser->processElementTags('', $prompt, true, true, '[[', ']]', [], 10);
+        $this->modx->parser->processElementTags('', $prompt, true, true, '[[++', ']]', [], 10);
+
+        /** @var Message $message */
+        $message = $this->modx->newObject(Message::class);
+        $message->fromArray([
+            'conversation' => $conversation->get('id'),
+            'user_role' => Message::ROLE_DEVELOPER,
+            'user' => 0,
+            'created_on' => time(),
+            'content' => $prompt,
+        ]);
+
+        return $message->save();
     }
 }

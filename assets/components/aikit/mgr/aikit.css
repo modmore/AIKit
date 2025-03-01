@@ -186,19 +186,16 @@
     align-self: flex-start;
 }
 
-.developer-pill {
+.developer-message {
     padding: 0.5rem 1rem;
     background-color: #ffeeba; /* Light yellow for prominence */
-    font-size: 0.875rem;
-    font-weight: bold;
+    font-size: 0.7rem;
     color: #856404; /* Dark yellowish-brown text */
     border: 1px solid #ffe8a1;
     border-radius: 20px;
-    cursor: pointer;
-    text-align: center;
-    max-width: fit-content;
-    margin-bottom: 0.5rem;
-    transition: background-color 0.2s ease;
+    border-bottom-right-radius: 5px; /* Slightly sharper edge */
+    text-align: right;
+    margin-bottom: 1em;
 }
 
 .developer-pill:hover {

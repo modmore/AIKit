@@ -6,6 +6,7 @@
 switch ($modx->event->name) {
     case 'OnManagerPageBeforeRender':
         $assetsUrl = $modx->getOption('aikit.assets_url', null, $modx->getOption('assets_url') . 'components/aikit/');
+        $showSystemPrompt = !empty($modx->getOption('aikit.system_prompt_visible')) ? 'true' : 'false';
         $controller->addJavascript($assetsUrl . 'mgr/aikit.js');
         $controller->addJavascript('https://cdn.jsdelivr.net/npm/markdown-it/dist/markdown-it.min.js'); // @todo ship local
         $controller->addCss($assetsUrl . 'mgr/aikit.css');
@@ -21,8 +22,9 @@ switch ($modx->event->name) {
         
         const assistant = new AIKit();
         assistant.initialize(assistentElement, {
-            assetsUrl: '$assetsUrl'
-        });
+            assetsUrl: '$assetsUrl',
+            showSystemPrompt: $showSystemPrompt,
+        })
     })
 })()
 

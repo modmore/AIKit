@@ -165,7 +165,7 @@ foreach ($settings as $key => $setting) {
     if (!($exists instanceof modSystemSetting)) {
         $setting->save();
     }
-    elseif ($update && ($exists instanceof modSystemSetting)) {
+    elseif (($key === 'system_prompt' || $update) && ($exists instanceof modSystemSetting)) {
         $exists->fromArray($setting->toArray(), '', true);
         $exists->save();
     }
