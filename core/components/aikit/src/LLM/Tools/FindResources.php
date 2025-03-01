@@ -65,12 +65,12 @@ class FindResources implements ToolInterface
     public function runTool(array $arguments): string
     {
         $query = $arguments['query'] ?? '';
-//        $query = $this->modx->escape($query); // @todo add escaping
-        $query = !empty($query) ? "AND (s.pagetitle LIKE '%{$query}%' OR s.longtitle LIKE '%{$query}%' OR s.introtext LIKE '%{$query}%')" : '';
+        $query = !empty($query) ? $this->modx->quote('%' . $query . '%') : '';
         $stmt = $this->modx->query("
-            SELECT uri, id, FROM_UNIXTIME(editedon, '%Y-%m-%d') as editedon
+            SELECT uri, id, FROM_UNIXTIME(editedon, '%Y-%m-%d') as editedon 
             FROM modx_site_content AS s
-            WHERE s.deleted = 0 AND s.published = 1 AND s.searchable = 1 $query
+            WHERE s.deleted = 0 AND s.published = 1 AND s.searchable = 1 
+            " . (!empty($query) ? "AND (s.pagetitle LIKE {$query} OR s.longtitle LIKE {$query} OR s.introtext LIKE {$query})" : "") . "
             GROUP BY s.id
             ORDER BY s.id ASC
         ");
