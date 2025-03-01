@@ -22,6 +22,10 @@ Example use cases:
 - Run `composer bootstrap` or `php _bootstrap/index.php` in the project root directory
 - Add your OpenAI api key to the `aikit.openai_api_key` system setting, or configure for your other OpenAPI compatible LLM.
 
+## Installing package
+
+Currently a transport package of the latest dev build is available from the _packages directory on github and [in the MODX.com package provider](https://extras.modx.com/package/aikit). 
+
 ## AI Assistant
 
 The AI assistant lives in the manager, as an icon in the top-right of the manager. Clicking it will open a UI that slides out of the left side of the menu. From there users can access their own historic chats, start a new chat, and find a link to the configuration CMP. 
