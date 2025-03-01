@@ -52,6 +52,7 @@ class ConversationsAPI implements ApiInterface
     {
         $body = json_decode((string)$request->getBody(), true);
         $body['title'] = $body['title'] ?? 'New conversation';
+        $body['prompt'] = $body['prompt'] ?? '';
 
         /** @var Conversation $conversation */
         $conversation = $this->modx->newObject(Conversation::class);
@@ -69,7 +70,12 @@ class ConversationsAPI implements ApiInterface
             return $this->createJsonResponse(['error' => 'Failed to add system prompt'], 500);
         }
 
-        // @todo allow the creation of a conversation to add its own system prompt (like provide current context)
+        if (!empty($body['prompt'])) {
+            $prompt = $body['prompt'] . "\n\n" . 'Return only the result of the prompt as a JSON object. Do not include any text around the JSON structure. The only key in the json object must be "callback". The callback must be a nested json object that contains the requested keys mentioned before.';
+            if (!$this->addPrompt($conversation, $prompt, Message::ROLE_USER)) {
+                return $this->createJsonResponse(['error' => 'Failed to add context prompt'], 500);
+            }
+        }
 
         return $this->createJsonResponse(['data' => $conversation->toArray()], 201);
     }
@@ -104,7 +110,7 @@ class ConversationsAPI implements ApiInterface
         return $response;
     }
 
-    private function addPrompt(Conversation $conversation, string $prompt): bool
+    private function addPrompt(Conversation $conversation, string $prompt, string $role = Message::ROLE_DEVELOPER): bool
     {
         // Process MODX placeholders and tags
         $parser = $this->modx->getParser();
@@ -115,7 +121,7 @@ class ConversationsAPI implements ApiInterface
         $message = $this->modx->newObject(Message::class);
         $message->fromArray([
             'conversation' => $conversation->get('id'),
-            'user_role' => Message::ROLE_DEVELOPER,
+            'user_role' => $role,
             'user' => 0,
             'created_on' => time(),
             'content' => $prompt,

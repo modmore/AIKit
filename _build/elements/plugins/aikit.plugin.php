@@ -22,8 +22,8 @@ switch ($modx->event->name) {
         const leftbarTrigger = document.getElementById('modx-leftbar-trigger');
         leftbarTrigger.parentNode.insertBefore(assistentElement, leftbarTrigger);
         
-        const assistant = new AIKit();
-        assistant.initialize(assistentElement, {
+        MODx.AIKit = new AIKit();
+        MODx.AIKit.initialize(assistentElement, {
             assetsUrl: '$assetsUrl',
             showSystemPrompt: $showSystemPrompt,
         })
