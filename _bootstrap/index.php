@@ -194,6 +194,8 @@ foreach ($objectContainers as $oC) {
     $manager->createObjectContainer($oC);
 }
 
+$manager->addField(\modmore\AIKit\Model\Message::class, 'is_vector_augmented', ['after' => 'tool_call_id']);
+
 $modx->getCacheManager()->refresh();
 
 $exTools = [

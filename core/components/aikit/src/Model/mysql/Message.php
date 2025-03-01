@@ -23,6 +23,7 @@ class Message extends \modmore\AIKit\Model\Message
             'conversation' => 0,
             'llm_id' => '',
             'tool_call_id' => '',
+            'is_vector_augmented' => 0,
             'user_role' => 'system',
             'user' => 0,
             'content' => '',
@@ -58,6 +59,14 @@ class Message extends \modmore\AIKit\Model\Message
                 'phptype' => 'string',
                 'null' => false,
                 'default' => '',
+            ),
+            'is_vector_augmented' => 
+            array (
+                'dbtype' => 'tinyint',
+                'precision' => '1',
+                'phptype' => 'boolean',
+                'null' => false,
+                'default' => 0,
             ),
             'user_role' => 
             array (

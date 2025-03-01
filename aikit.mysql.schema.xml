@@ -36,6 +36,7 @@
         <field key="conversation" dbtype="int" precision="10" phptype="int" null="false" default="0" attributes="unsigned" />
         <field key="llm_id" dbtype="varchar" precision="190" phptype="string" null="false" default="" />
         <field key="tool_call_id" dbtype="varchar" precision="190" phptype="string" null="false" default="" />
+        <field key="is_vector_augmented" dbtype="tinyint" precision="1" phptype="boolean" null="false" default="0" />
 
         <field key="user_role" dbtype="varchar" precision="190" phptype="string" null="false" default="system" />
         <field key="user" dbtype="int" precision="10" phptype="int" null="false" default="0" attributes="unsigned" />
