@@ -2,6 +2,7 @@
 
 namespace modmore\AIKit\LLM;
 
+use modmore\AIKit\LLM\Models\ModelInterface;
 use modmore\AIKit\LLM\Models\OpenAI;
 use modmore\AIKit\LLM\Tools\ToolInterface;
 use modmore\AIKit\LLM\Vectors\VectorDatabaseInterface;
@@ -17,7 +18,7 @@ class Model
 
     /** @var ToolInterface[] */
     private array $tools = [];
-    private OpenAI $model;
+    private ModelInterface $model;
 
     public function __construct(modX $modx, array $config = [])
     {
@@ -25,8 +26,14 @@ class Model
         $this->config = $config;
         $this->getTools();
 
-        // @todo enable alternative models
-        $this->model = new OpenAI($modx, $config, $this->tools);
+        try {
+            $class = $this->modx->getOption('aikit.model', null, '', true);
+            if (!empty($class) && is_subclass_of($class, ModelInterface::class, true)) {
+                $this->model =  new $class($this->modx, $config, $this->tools);
+            }
+        } catch (\Throwable $e) {
+            $this->modx->log(modX::LOG_LEVEL_ERROR, 'Failed to load vector database: ' . $e->getMessage() . ' / ' . $e->getTraceAsString());
+        }
     }
 
     public function send(Conversation $conversation)

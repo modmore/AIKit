@@ -110,7 +110,7 @@ class MessagesAPI implements ApiInterface
             $model->send($conversation);
         } catch (Throwable $e) {
             $this->modx->log(modX::LOG_LEVEL_ERROR, 'Failed to send message to model: ' . $e->getMessage() . ' / ' . $e->getTraceAsString());
-            return $this->createJsonResponse(['error' => 'Failed to send message to model'], 500);
+            return $this->createJsonResponse(['error' => 'Failed to send message to model. More details are available in the MODX Error Log.'], 500);
         }
 
 //        if ($conversation->get('title') === 'New conversation') {

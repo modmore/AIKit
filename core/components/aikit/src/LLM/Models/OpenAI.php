@@ -12,10 +12,10 @@ use Psr\Http\Message\RequestFactoryInterface;
 
 class OpenAI implements ModelInterface
 {
-    private modX $modx;
-    private array $config;
-    private ClientInterface $client;
-    private RequestFactoryInterface $requestFactory;
+    protected modX $modx;
+    protected array $config;
+    protected ClientInterface $client;
+    protected RequestFactoryInterface $requestFactory;
     /**
      * @var ToolInterface[]
      */
@@ -26,8 +26,8 @@ class OpenAI implements ModelInterface
         $this->modx = $modx;
         $this->config = $config;
 
-        $this->client = $this->modx->services->get(\Psr\Http\Client\ClientInterface::class);
-        $this->requestFactory = $this->modx->services->get(\Psr\Http\Message\RequestFactoryInterface::class);
+        $this->client = $this->modx->services->get(ClientInterface::class);
+        $this->requestFactory = $this->modx->services->get(RequestFactoryInterface::class);
         $this->tools = $tools;
 
         $this->config['api_key'] = $this->config['api_key'] ?? $this->modx->getOption('aikit.openai_api_key');
@@ -44,15 +44,19 @@ class OpenAI implements ModelInterface
         $c->sortby('created_on', 'ASC');
         $c->sortby('id', 'ASC');
         $messages = $this->modx->getCollection(Message::class, $c);
+        $parsed = [];
+        foreach ($messages as $message) {
+            $parsed[] = $this->prepareMessage($message);
+        }
 
         $requestData = [
             'model' => $this->config['model'], // Default to 'gpt-4o-mini' or use a different configured model
-            'messages' => array_values(array_map([$this, 'prepareMessage'], $messages)),
+            'messages' => array_values($parsed),
             'tools' => $this->getToolsDefinitions()
         ];
 
         $requestBody = json_encode($requestData, JSON_THROW_ON_ERROR);
-        $this->modx->log(modX::LOG_LEVEL_DEBUG, 'Sending request to OpenAI: ' . $requestBody,);
+        $this->modx->log(modX::LOG_LEVEL_DEBUG, 'Sending request to OpenAI: ' . $requestBody);
 
         $request = $this->requestFactory
             ->createRequest('POST', $this->config['endpoint'] . 'chat/completions')
@@ -64,13 +68,12 @@ class OpenAI implements ModelInterface
 
         if ($response->getStatusCode() >= 200 && $response->getStatusCode() < 300) {
             $responseData = json_decode((string)$response->getBody(), true, 512, JSON_THROW_ON_ERROR);
-
-            return new ModelResponse($responseData); // Assuming ModelResponse can accept the raw data
+            return new ModelResponse($responseData);
         }
 
-        $this->modx->log(modX::LOG_LEVEL_ERROR, 'Failed to communicate with OpenAI: ' . (string)$response->getBody() . '  ' . $response->getReasonPhrase() . ' (' . $requestBody . ')',);
+        $this->modx->log(modX::LOG_LEVEL_ERROR, get_class($this) . ' LLM message error: ' . (string)$response->getBody() . '  ' . $response->getReasonPhrase() . ' (' . $requestBody . ')',);
         throw new \RuntimeException(
-            'Failed to communicate with OpenAI: ' . (string)$response->getBody() . '  ' . $response->getReasonPhrase() . ' (' . $requestBody . ')',
+            'Unexpected error processing your request: ' . (string)$response->getBody() . '  ' . $response->getReasonPhrase() . ' (' . $requestBody . ')',
             $response->getStatusCode()
         );
     }
@@ -78,7 +81,7 @@ class OpenAI implements ModelInterface
     /**
      * @return \Closure
      */
-    private function prepareMessage(Message $message): array
+    protected function prepareMessage(Message $message): array
     {
         $user = null;
         if ($message->get('user') > 0) {
@@ -108,7 +111,7 @@ class OpenAI implements ModelInterface
         }
     }
 
-    private function getToolsDefinitions()
+    protected function getToolsDefinitions()
     {
         $tools = [];
         foreach ($this->tools as $name => $tool) {
