@@ -10,7 +10,7 @@ use MODX\Revolution\modX;
 class Pinecone implements VectorDatabaseInterface
 {
     private array $config;
-    private ?Client $client = null;
+    private Client $client;
     private string $contentIndex;
     private modX $modx;
 
@@ -54,31 +54,10 @@ class Pinecone implements VectorDatabaseInterface
         }
     }
 
-    public function upsert(array $vectors, array $metadata = []): bool
-    {
-        try {
-            $response = $this->client?->post("databases/{$this->contentIndex}/vectors/upsert", [
-                'json' => [
-                    'vectors' => array_map(function ($vector, $key) use ($metadata) {
-                        return [
-                            'id' => (string)$key,
-                            'values' => $vector,
-                            'metadata' => $metadata[$key] ?? [],
-                        ];
-                    }, $vectors, array_keys($vectors)),
-                ],
-            ]);
-
-            return $response?->getStatusCode() === 200;
-        } catch (GuzzleException $e) {
-            return false;
-        }
-    }
-
     public function delete(array $ids): bool
     {
         try {
-            $response = $this->client?->post("databases/{$this->contentIndex}/vectors/delete", [
+            $response = $this->client->post("databases/{$this->contentIndex}/vectors/delete", [
                 'json' => [
                     'ids' => $ids,
                 ],
@@ -90,26 +69,7 @@ class Pinecone implements VectorDatabaseInterface
         }
     }
 
-    public function query(array $vector, int $topK = 10, array $filters = []): array
-    {
-        try {
-            $response = $this->client?->post("databases/{$this->contentIndex}/query", [
-                'json' => [
-                    'vector' => $vector,
-                    'topK' => $topK,
-                    'filter' => $filters,
-                ],
-            ]);
-            if ($response?->getStatusCode() === 200) {
-                return json_decode($response->getBody()->getContents(), true);
-            }
-        } catch (GuzzleException $e) {
-        }
-
-        return [];
-    }
-
-    public function augmentChatCompletion(string $query, array $options = []): string
+    public function query(string $query, array $options = []): string
     {
         try {
             $response = $this->client?->post("records/namespaces/{$this->contentIndex}/search", [
@@ -128,13 +88,8 @@ class Pinecone implements VectorDatabaseInterface
 
             $json = json_decode($response->getBody()->getContents(), true);
             $augmented = [];
-//            foreach ($json['result']['hits'] as $hit) {
-//                $augmented[] = "{$hit['fields']['resource_id']} (\"{$hit['fields']['pagetitle']}\")";
-//            }
-//            return "Consider using relevant knowledge from pages: " . implode(", ", $augmented);
-
             foreach ($json['result']['hits'] as $hit) {
-                $augmented[] = "Potential relevant content from {$hit['fields']['resource_id']} (\"{$hit['fields']['pagetitle']}\"):\n{$hit['fields']['content']}";
+                $augmented[] = "Potential relevant context from resource {$hit['fields']['resource_id']} (\"{$hit['fields']['pagetitle']}\"):\n{$hit['fields']['introtext']}\n{$hit['fields']['content']}";
             }
             return implode("\n\n", $augmented);
         } catch (GuzzleException $e) {
