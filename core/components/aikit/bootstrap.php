@@ -6,6 +6,7 @@
  */
 
 use GuzzleHttp\Psr7\HttpFactory;
+use modmore\AIKit\LLM\Model;
 use xPDO\xPDO;
 
 if (!file_exists(__DIR__ . '/vendor/autoload.php')) {
@@ -24,3 +25,7 @@ if (!$modx->services->has(\Psr\Http\Message\ResponseFactoryInterface::class)) {
         return new HttpFactory();
     });
 }
+
+$modx->services->add(Model::class, function () use ($modx) {
+    return new Model($modx);
+});

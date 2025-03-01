@@ -120,6 +120,16 @@ if ($plugin) {
 }
 
 if (
+    !createObject('modSnippet', array(
+        'name' => 'AIKit',
+        'static' => true,
+        'static_file' => $componentPath . '/_build/elements/snippets/aikit.snippet.php',
+    ), 'name', true)
+) {
+    echo "Error creating AIKit Plugin.\n";
+}
+
+if (
     !createObject('modMenu', array(
     'text' => 'aikit.configuration',
     'description' => 'aikit.configuration.menu_desc',

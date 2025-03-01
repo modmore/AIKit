@@ -3,7 +3,6 @@
 namespace modmore\AIKit\LLM;
 
 use modmore\AIKit\LLM\Models\ModelInterface;
-use modmore\AIKit\LLM\Models\OpenAI;
 use modmore\AIKit\LLM\Tools\ToolInterface;
 use modmore\AIKit\LLM\Vectors\VectorDatabaseInterface;
 use modmore\AIKit\Model\Conversation;
@@ -36,7 +35,7 @@ class Model
         }
     }
 
-    public function send(Conversation $conversation)
+    public function send(Conversation $conversation): Message
     {
         if ($vectorDb = $this->getVectorDatabase()) {
             $c = $this->modx->newQuery(Message::class);
@@ -132,6 +131,36 @@ class Model
             default:
                 return $message;
         }
+    }
+
+    public function prompt(string $prompt)
+    {
+        /** @var Conversation $conversation */
+        $conversation = $this->modx->newObject(Conversation::class);
+        $conversation->fromArray([
+            'title' => 'New conversation',
+            'started_on' => time(),
+        ]);
+        $conversation->save();
+        /** @var Message $message */
+        $message = $this->modx->newObject(Message::class);
+        $message->fromArray([
+            'conversation' => $conversation->get('id'),
+            'user_role' => Message::ROLE_USER,
+            'content' => $prompt,
+            'created_on' => time(),
+        ]);
+        $message->save();
+        $conversation->addMany($message);
+
+        try {
+            $response = $this->send($conversation);
+        } catch (\Throwable $e) {
+            $this->modx->log(modX::LOG_LEVEL_ERROR, 'Failed to send prompt to model: ' . $e->getMessage() . ' / ' . $e->getTraceAsString());
+            return $this->modx->lexicon('aikit.error.prompt_failed');
+        }
+
+        return $response->get('content');
     }
 
     private function getTools(): void

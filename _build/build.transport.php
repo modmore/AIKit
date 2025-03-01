@@ -201,6 +201,24 @@ $vehicle->resolve('php', array(
 ));
 $builder->putVehicle($vehicle);
 
+/* create the snippet object */
+$snippet = $modx->newObject('modSnippet');
+$snippet->set('name', 'AIKit');
+$snippet->set('description', 'AIKit AI assistant prompt snippet');
+$snippet->set('snippet', getSnippetContent($sources['build'] . 'elements/snippets/aikit.snippet.php'));
+$snippet->set('category', 0);
+
+$attributes = [
+    \xPDO\Transport\xPDOTransport::UNIQUE_KEY => 'name',
+    \xPDO\Transport\xPDOTransport::PRESERVE_KEYS => false,
+    \xPDO\Transport\xPDOTransport::UPDATE_OBJECT => true,
+];
+$vehicle = $builder->createVehicle($snippet, $attributes);
+$builder->putVehicle($vehicle);
+
+$modx->log(modX::LOG_LEVEL_INFO, 'Packaged in snippet.');
+flush();
+
 
 $modx->log(modX::LOG_LEVEL_INFO, 'Adding package attributes and setup options...');
 $builder->setPackageAttributes(array(
