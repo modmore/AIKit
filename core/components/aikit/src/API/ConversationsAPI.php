@@ -107,8 +107,9 @@ class ConversationsAPI implements ApiInterface
     private function addPrompt(Conversation $conversation, string $prompt): bool
     {
         // Process MODX placeholders and tags
-        $this->modx->parser->processElementTags('', $prompt, true, true, '[[', ']]', [], 10);
-        $this->modx->parser->processElementTags('', $prompt, true, true, '[[++', ']]', [], 10);
+        $parser = $this->modx->getParser();
+        $parser->processElementTags('', $prompt, true, true, '[[', ']]', [], 10);
+        $parser->processElementTags('', $prompt, true, true, '[[++', ']]', [], 10);
 
         /** @var Message $message */
         $message = $this->modx->newObject(Message::class);
