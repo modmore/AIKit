@@ -13,6 +13,15 @@ Example use cases:
 - Quickly navigate to specific resources, users, orders, etc
 - Answer basic questions 
 
+## Installing from source
+
+- Clone the repository into a development site
+- Copy config.core.sample.php in the root of the project and make sure it points to your core directory
+- Run `composer install` in the `core/components/aikit/` directory
+- Run `composer install` in the project root directory
+- Run `composer bootstrap` or `php _bootstrap/index.php` in the project root directory
+- Add your OpenAI api key to the `aikit.openai_api_key` system setting, or configure for your other OpenAPI compatible LLM.
+
 ## AI Assistant
 
 The AI assistant lives in the manager, as an icon in the top-right of the manager. Clicking it will open a UI that slides out of the left side of the menu. From there users can access their own historic chats, start a new chat, and find a link to the configuration CMP. 
