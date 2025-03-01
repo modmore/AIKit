@@ -108,6 +108,15 @@ if ($plugin) {
     ) {
         echo "Error creating modPluginEvent for AIKit Plugin.\n";
     }
+    if (
+        !createObject('modPluginEvent', array(
+            'pluginid' => $plugin->get('id'),
+            'event' => 'OnDocFormSave',
+            'priority' => 0,
+        ), array('pluginid', 'event'), false)
+    ) {
+        echo "Error creating modPluginEvent for AIKit Plugin.\n";
+    }
 }
 
 if (

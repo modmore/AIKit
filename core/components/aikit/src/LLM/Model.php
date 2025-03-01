@@ -4,6 +4,7 @@ namespace modmore\AIKit\LLM;
 
 use modmore\AIKit\LLM\Models\OpenAI;
 use modmore\AIKit\LLM\Tools\ToolInterface;
+use modmore\AIKit\LLM\Vectors\VectorDatabaseInterface;
 use modmore\AIKit\Model\Conversation;
 use modmore\AIKit\Model\Message;
 use modmore\AIKit\Model\Tool;
@@ -104,5 +105,18 @@ class Model
                 $this->modx->log(modX::LOG_LEVEL_ERROR, 'Failed to load tool ' . $tool->get('id') . ': ' . $e->getMessage() . ' / ' . $e->getTraceAsString());
             }
         }
+    }
+
+    public function getVectorDatabase(): ?VectorDatabaseInterface
+    {
+        try {
+            $class = $this->modx->getOption('aikit.vector_database', null, '', true);
+            if (!empty($class) && is_subclass_of($class, VectorDatabaseInterface::class, true)) {
+                return new $class($this->modx);
+            }
+        } catch (\Throwable $e) {
+            $this->modx->log(modX::LOG_LEVEL_ERROR, 'Failed to load vector database: ' . $e->getMessage() . ' / ' . $e->getTraceAsString());
+        }
+        return null;
     }
 }
