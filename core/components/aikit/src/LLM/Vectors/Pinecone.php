@@ -109,12 +109,36 @@ class Pinecone implements VectorDatabaseInterface
         return [];
     }
 
-    public function augmentChatCompletion(string $query, array $options = []): array
+    public function augmentChatCompletion(string $query, array $options = []): string
     {
-        // Implementation depends on the embedding model being used
-        return [
-            'context' => [],
-            'augmented_prompt' => $query,
-        ];
+        try {
+            $response = $this->client?->post("records/namespaces/{$this->contentIndex}/search", [
+                'json' => [
+                    'query' => [
+                        'inputs' => ['text' => $query],
+                        'top_k' => 5,
+                    ],
+                    'rerank' => [
+                        'model' => 'bge-reranker-v2-m3',
+                        'top_n' => 3,
+                        'rank_fields' => ['text'],
+                    ]
+                ],
+            ]);
+
+            $json = json_decode($response->getBody()->getContents(), true);
+            $augmented = [];
+//            foreach ($json['result']['hits'] as $hit) {
+//                $augmented[] = "{$hit['fields']['resource_id']} (\"{$hit['fields']['pagetitle']}\")";
+//            }
+//            return "Consider using relevant knowledge from pages: " . implode(", ", $augmented);
+
+            foreach ($json['result']['hits'] as $hit) {
+                $augmented[] = "Potential relevant content from {$hit['fields']['resource_id']} (\"{$hit['fields']['pagetitle']}\"):\n{$hit['fields']['content']}";
+            }
+            return implode("\n\n", $augmented);
+        } catch (GuzzleException $e) {
+        }
+        return "No additional context found.";
     }
 }

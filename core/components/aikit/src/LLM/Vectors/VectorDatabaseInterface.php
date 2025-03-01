@@ -40,5 +40,5 @@ interface VectorDatabaseInterface
      * @param array $options Additional options for RAG
      * @return array Context and augmented prompt
      */
-    public function augmentChatCompletion(string $query, array $options = []): array;
+    public function augmentChatCompletion(string $query, array $options = []): string;
 }

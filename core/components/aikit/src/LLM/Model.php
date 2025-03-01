@@ -31,6 +31,38 @@ class Model
 
     public function send(Conversation $conversation)
     {
+        if ($vectorDb = $this->getVectorDatabase()) {
+            $c = $this->modx->newQuery(Message::class);
+            $c->where([
+             'conversation' => $conversation->get('id'),
+             'user_role' => Message::ROLE_USER
+            ]);
+            $c->sortby('created_on', 'DESC');
+            $c->limit(1);
+            // Get last user message to use for vector search
+            $lastUserMessage = $this->modx->getObject(Message::class, $c);
+
+            // If we have a last user message, query for relevant context
+            if ($lastUserMessage && !$lastUserMessage->get('is_vector_augmented')) {
+                $lastUserMessage->set('is_vector_augmented', true);
+                $lastUserMessage->save();
+
+                $context = $vectorDb->augmentChatCompletion($lastUserMessage->get('content'));
+                if (!empty($context)) {
+                    /** @var Message $contextMessage */
+                    $contextMessage = $this->modx->newObject(Message::class);
+                    $contextMessage->fromArray([
+                        'conversation' => $conversation->get('id'),
+                        'user_role' => Message::ROLE_DEVELOPER,
+                        'content' => $context,
+                        'created_on' => time(),
+                    ]);
+                    $contextMessage->save();
+                    $conversation->addMany($contextMessage);
+                }
+            }
+        }
+
         // Send all messages to the LLM
         $response = $this->model->send($conversation);
 
