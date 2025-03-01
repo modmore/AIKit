@@ -117,7 +117,7 @@ class AIKit {
 
         // Settings link/icon below the send button
         const settingsLink = document.createElement('a');
-        settingsLink.href = MODx.config.manager_url + '?a=configuration&namespace=aikit'; // Replace with the actual path
+        settingsLink.href = MODx.config.manager_url + '?a=/configuration&namespace=aikit'; // Replace with the actual path
         settingsLink.className = 'ai-assistant-settings';
         settingsLink.innerHTML = '<i class="icon icon-cog"></i>'; // Font Awesome settings icon
 
@@ -145,7 +145,7 @@ class AIKit {
     // Fetch and render the list of chats
     fetchConversations()
     {
-        fetch(this.config.assetsUrl + 'api.php?a=conversations')
+        fetch(this.config.assetsUrl + 'api.php?a=/conversations')
             .then(response => response.json())
             .then(data => this.renderChatsList(data.data))
             .catch(error => console.error('Error fetching conversations:', error));
@@ -199,7 +199,7 @@ class AIKit {
 
     loadChatMessages(conversationId)
     {
-        fetch(this.config.assetsUrl + 'api.php?a=messages&conversation=' + conversationId)
+        fetch(this.config.assetsUrl + 'api.php?a=/messages&conversation=' + conversationId)
             .then(response => response.json())
             .then(data => this.renderChatMessages(data.data))
             .catch(error => console.error('Error fetching messages:', error));
@@ -215,7 +215,7 @@ class AIKit {
     sendMessage(textarea, messageContainer)
     {
         if (!this.currentConversation) {
-            fetch(this.config.assetsUrl + 'api.php?a=conversations', {
+            fetch(this.config.assetsUrl + 'api.php?a=/conversations', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -251,7 +251,7 @@ class AIKit {
         this.awaitAsyncMessages(this.currentConversation);
 
         textarea.value = '';
-        fetch(this.config.assetsUrl + 'api.php?a=messages&conversation=' + this.currentConversation, {
+        fetch(this.config.assetsUrl + 'api.php?a=/messages&conversation=' + this.currentConversation, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -281,7 +281,7 @@ class AIKit {
         const lastMessageId = this.messageRenderer.renderedMessages.size > 0 ?
             [...this.messageRenderer.renderedMessages.keys()].pop() : 0;
 
-        fetch(`${this.config.assetsUrl}api.php?a=conversation/await&conversation=${this.currentConversation}&last_message=${lastMessageId}`)
+        fetch(`${this.config.assetsUrl}api.php?a=/conversation/await&conversation=${this.currentConversation}&last_message=${lastMessageId}`)
             .then(response => response.json())
             .then(data => {
                 const msgs = Object.values(data.data);
