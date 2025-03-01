@@ -4,7 +4,7 @@ namespace modmore\AIKit\LLM\Models;
 
 use modmore\AIKit\Model\Message;
 
-class Mistral extends OpenAI
+class OpenAILegacy extends OpenAI
 {
     /**
      * @return \Closure
