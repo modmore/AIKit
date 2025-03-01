@@ -371,6 +371,15 @@ class MessageRenderer {
                 </div>
             `;
         } else if (user_role === 'assistant') {
+            if (content.length > 0) {
+                content = md.render(content);
+
+                messageEl.innerHTML += `
+                    <div class="assistant-message">
+                        ${content}
+                    </div>
+                `;
+            }
             if (Object.values(msg.tool_calls).length > 0) {
                 const toolCallsContent = msg.tool_calls.map((toolCall, index) => {
                     const args = toolCall.function.arguments;
@@ -406,15 +415,6 @@ class MessageRenderer {
                     }
                 });
             }
-            else {
-                content = md.render(content);
-
-                messageEl.innerHTML = `
-                    <div class="assistant-message">
-                        ${content}
-                    </div>
-                `;
-            }
         } else if (user_role === 'tool') {
             let toolCallEl = this.messageContainer.querySelector('#tool-' + msg.tool_call_id);
             if (toolCallEl) {
@@ -434,7 +434,6 @@ class MessageRenderer {
                 </div>
             `;
         }
-
 
         return messageEl;
     }
