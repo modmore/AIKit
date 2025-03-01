@@ -255,11 +255,13 @@
     text-align: left;
 }
 
-#modx-navbar .assistant-message, #modx-navbar .assistant-message * {
+#modx-navbar .assistant-message, #modx-navbar .assistant-message *,
+#modx-navbar .user-message, #modx-navbar .user-message * {
     text-align: left;
     line-height: 1.4;
 }
-#modx-navbar .assistant-message a {
+#modx-navbar .assistant-message a,
+#modx-navbar .user-message a {
     color: #234368;
     width: auto;
     display: inline;

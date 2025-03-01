@@ -364,6 +364,7 @@ class MessageRenderer {
                 </div>
             `;
         } else if (user_role === 'user') {
+            content = md.render(content);
             messageEl.innerHTML = `
                 <div class="user-message">
                     <div class="username-bubble">${msg.user_username}</div>
