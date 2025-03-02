@@ -4,6 +4,7 @@ class AIKit {
         this.rootElement = null;
         this.assistantOpen = false;
         this.currentConversation = null;
+        this.callback = null;
         this.config = {
             assetsUrl: '/assets/components/aikit/',
         };
@@ -15,6 +16,21 @@ class AIKit {
         this.rootElement = rootElement;
         this.renderAssistantButton();
         this.config = {...this.config, ...config};
+    }
+
+    openWithContext(prompt, callback)
+    {
+        this.newPrompt = prompt;
+        this.callback = callback;
+        this.currentConversation = null;
+        if (this.messageRenderer) {
+            this.messageRenderer.reset();
+        }
+        if (this.assistantOpen) {
+            this.toggleAssistant();
+        }
+        this.toggleAssistant();
+        this.sendMessage("Perform in-context action.");
     }
 
     // Render the button to open the assistant
@@ -67,7 +83,6 @@ class AIKit {
         this.messageContainer = document.createElement('div');
         this.messageContainer.className = 'ai-assistant-message-container';
         mainContent.appendChild(this.messageContainer);
-        // @todo showPrompt
         this.messageRenderer = new MessageRenderer(this.messageContainer, this.config);
 
         // Create the chat list container
@@ -104,6 +119,8 @@ class AIKit {
             this.style.height = `${this.scrollHeight + 2}px`; // Adjust to content's height
         });
 
+        this.inputarea = textarea;
+
         // Container for send button and settings link
         const buttonContainer = document.createElement('div');
         buttonContainer.className = 'ai-assistant-button-container';
@@ -113,7 +130,10 @@ class AIKit {
         sendButton.className = 'ai-assistant-send-button'; // Add class for custom styling
         sendButton.innerHTML = '<i class="icon icon-paper-plane"></i>'; // Font Awesome send icon
 
-        sendButton.addEventListener('click', () => this.sendMessage(textarea, this.messageContainer));
+        sendButton.addEventListener('click', () => {
+            this.sendMessage(textarea.value.trim());
+            textarea.value = '';
+        });
 
         // Settings link/icon below the send button
         const settingsLink = document.createElement('a');
@@ -212,7 +232,7 @@ class AIKit {
     }
 
     // Send a message
-    sendMessage(textarea, messageContainer)
+    sendMessage(prompt)
     {
         if (!this.currentConversation) {
             fetch(this.config.assetsUrl + 'api.php?a=/conversations', {
@@ -220,14 +240,17 @@ class AIKit {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({}),
+                body: JSON.stringify({
+                    prompt: this.newPrompt || '',
+                }),
             })
                 .then(async response => {
                     const jsonResponse = await response.json();
                     if (response.status === 201) {
                         this.currentConversation = jsonResponse.data.id; // Store the new conversation ID
-                        this.sendMessage(textarea, messageContainer);
+                        this.sendMessage(prompt);
                         this.fetchConversations();
+                        this.newPrompt = null;
                     } else {
                         console.error('Error creating a new conversation:', jsonResponse.error || 'Unknown error');
                     }
@@ -239,24 +262,22 @@ class AIKit {
         }
 
         this.isLoading = true;
-        const messageContent = textarea.value.trim();
-        if (!messageContent) {
+        if (!prompt || prompt.length === 0) {
             return;
         }
 
         const loadingIndicator = document.createElement('div');
         loadingIndicator.textContent = 'Processing...';
-        messageContainer.appendChild(loadingIndicator);
+        this.messageContainer.appendChild(loadingIndicator);
 
         this.awaitAsyncMessages(this.currentConversation);
 
-        textarea.value = '';
         fetch(this.config.assetsUrl + 'api.php?a=/messages&conversation=' + this.currentConversation, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({content: messageContent}),
+            body: JSON.stringify({content: prompt}),
         })
             .then(async response => {
                 const jsonResponse = await response.json();
@@ -278,8 +299,7 @@ class AIKit {
 
     awaitAsyncMessages(conversationId)
     {
-        const lastMessageId = this.messageRenderer.renderedMessages.size > 0 ?
-            [...this.messageRenderer.renderedMessages.keys()].pop() : 0;
+        const lastMessageId = this.messageRenderer.lastMessageId;
 
         fetch(`${this.config.assetsUrl}api.php?a=/conversation/await&conversation=${this.currentConversation}&last_message=${lastMessageId}`)
             .then(response => response.json())
@@ -318,6 +338,9 @@ class MessageRenderer {
             const { id, user_role, user, content, status } = message;
             if (!this.config.showSystemPrompt && user_role === 'developer') {
                 return;
+            }
+            if (!this.lastMessageId || id > this.lastMessageId) {
+                this.lastMessageId = id;
             }
 
             // Check if the message is already rendered and hasn't changed
@@ -372,14 +395,54 @@ class MessageRenderer {
                 </div>
             `;
         } else if (user_role === 'assistant') {
+            
+            
+            
             if (content.length > 0) {
-                content = md.render(content);
+                try {
+                    const jsonContent = JSON.parse(content);
+                    if (jsonContent.callback && typeof jsonContent.callback === 'object') {
+                        const table = document.createElement('table');
+                        table.className = 'callback-table';
+                        Object.entries(jsonContent.callback).forEach(([key, value]) => {
+                            const row = table.insertRow();
+                            const keyCell = row.insertCell();
+                            const valueCell = row.insertCell();
+                            keyCell.textContent = key;
+                            valueCell.textContent = value;
+                        });
 
-                messageEl.innerHTML += `
-                    <div class="assistant-message">
-                        ${content}
-                    </div>
-                `;
+                        const acceptButton = document.createElement('button');
+                        acceptButton.className = 'callback-accept-button';
+                        acceptButton.textContent = 'Accept suggestion';
+                        acceptButton.addEventListener('click', () => {
+                            if (typeof this.callback === 'function') {
+                                this.callback(jsonContent.callback);
+                            }
+                        });
+
+                        messageEl.innerHTML += `
+                            <div class="assistant-message">
+                                ${table.outerHTML}
+                                ${acceptButton.outerHTML}
+                            </div>
+                        `;
+                    } else {
+                        content = md.render(content);
+                        messageEl.innerHTML += `
+                            <div class="assistant-message">
+                                ${content}
+                            </div>
+                        `;
+                    }
+                } catch (e) {
+                    content = md.render(content);
+                    messageEl.innerHTML += `
+                        <div class="assistant-message">
+                            ${content}
+                        </div>
+                    `;
+                }
             }
             if (Object.values(msg.tool_calls).length > 0) {
                 const toolCallsContent = msg.tool_calls.map((toolCall, index) => {
@@ -467,14 +530,5 @@ class MessageRenderer {
                 existingMessageEl.appendChild(contentEl);
             }
         }
-    }
-}
-
-// Example toggle logic for developer pills
-function toggleExpand(messageId)
-{
-    const contentEl = document.getElementById("message-content-" + messageId);
-    if (contentEl) {
-        contentEl.classList.toggle('hidden');
     }
 }
