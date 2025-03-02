@@ -32,7 +32,7 @@ if (!defined('MOREPROVIDER_BUILD')) {
     define('PKG_NAME', 'AIKit');
     define('PKG_NAMESPACE', 'aikit');
     define('PKG_VERSION', '0.1.0');
-    define('PKG_RELEASE', 'dev1');
+    define('PKG_RELEASE', 'dev2');
 
     /* load modx */
     require_once dirname(dirname(__FILE__)) . '/config.core.php';
